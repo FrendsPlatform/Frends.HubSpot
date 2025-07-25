@@ -6,16 +6,30 @@
 public class Result
 {
     /// <summary>
-    /// Indicates if the task completed successfully.
+    /// Initializes a new instance of the <see cref="Result"/> class.
+    /// Result of creating a HubSpot contact.
+    /// </summary>
+    /// <param name="success">True if the operation succeeded.</param>
+    /// <param name="contactId">Unique Id of the created contact.</param>
+    /// <param name="error">Error details if the operation failed.</param>
+    internal Result(bool success, string contactId, Error error = null)
+    {
+        Success = success;
+        ContactId = contactId;
+        Error = error;
+    }
+
+    /// <summary>
+    /// Indicates whether the retrieval was successful.
     /// </summary>
     /// <example>true</example>
     public bool Success { get; set; }
 
     /// <summary>
-    /// Input string repeated the specified number of times.
+    /// Unique Id of the created contact.
     /// </summary>
-    /// <example>foobar,foobar</example>
-    public string Output { get; set; }
+    /// <example>true</example>
+    public string ContactId { get; set; }
 
     /// <summary>
     /// Error that occurred during task execution.

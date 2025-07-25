@@ -1,25 +1,16 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Frends.HubSpot.CreateContact.Definitions;
 
 /// <summary>
-/// Essential parameters.
+/// Input parameters for creating a HubSpot contact.
 /// </summary>
 public class Input
 {
     /// <summary>
-    /// The input string to be repeated and output.
+    /// Key-value pairs representing contact properties as a JSON string.
     /// </summary>
-    /// <example>foobar</example>
-    [DisplayFormat(DataFormatString = "Text")]
-    [DefaultValue("Lorem ipsum dolor sit amet.")]
-    public string Content { get; set; }
-
-    /// <summary>
-    /// Number of times to repeat the input string.
-    /// </summary>
-    /// <example>2</example>
-    [DefaultValue(3)]
-    public int Repeat { get; set; }
+    /// <example>{ "email": "john@example.com", "firstname": "John" }</example>
+    [DisplayFormat(DataFormatString = "Json")]
+    public string ContactData { get; set; }
 }
