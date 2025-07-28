@@ -404,3 +404,4 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/Frends.HubSpot.CreateContact/Frends.HubSpot.CreateContact.Tests/.env
