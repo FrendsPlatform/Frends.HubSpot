@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using dotenv.net;
 using Frends.HubSpot.CreateContact.Definitions;
 using Frends.HubSpot.CreateContact.Helpers;
+using Frends.HubSpot.CreateContact.Tests.Helpers;
 using NUnit.Framework;
 
 namespace Frends.HubSpot.CreateContact.Tests;
@@ -50,27 +52,18 @@ public class UnitTests
         };
     }
 
-    /*
     [TearDown]
     public async Task Cleanup()
     {
-        if (!string.IsNullOrEmpty(contactId))
+        try
         {
-            try
-            {
-                await Helpers.TestHelpers.DeleteTestContact(contactId, apiKey);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error deleting test contact: {ex.Message}");
-            }
-            finally
-            {
-                contactId = null;
-            }
+            await TestHelpers.DeleteTestContact(contactId, apiKey);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Cleanup failed: {ex.Message}");
         }
     }
-    */
 
     [Test]
     public async Task CreateContact_SuccessTest()
@@ -87,23 +80,44 @@ public class UnitTests
     {
         var testCases = new[]
         {
-            new { Domain = "hubspot.com", ExpectedCompany = "HubSpot" },
-            new { Domain = "example.com", ExpectedCompany = "example.com" },
-            new { Domain = "testcompany.org", ExpectedCompany = "testcompany.org" },
+        new { Domain = "hubspot.com", ExpectedCompany = "HubSpot" },
+        new { Domain = "example.com", ExpectedCompany = "example.com" },
+        new { Domain = "testcompany.org", ExpectedCompany = "testcompany.org" },
         };
 
-        foreach (var testCase in testCases)
+        var createdContactIds = new List<string>();
+
+        try
         {
-            input.ContactData = $@"{{
-            ""email"": ""testcontact@{testCase.Domain}"",
-            ""firstname"": ""Test"",
-            ""lastname"": ""User""
+            foreach (var testCase in testCases)
+            {
+                input.ContactData = $@"{{
+                ""email"": ""testcontact@{testCase.Domain}"",
+                ""firstname"": ""Test"",
+                ""lastname"": ""User""
             }}";
 
-            var result = await HubSpot.CreateContact(input, connection, options, CancellationToken.None);
+                var result = await HubSpot.CreateContact(input, connection, options, CancellationToken.None);
 
-            Assert.That(result.Success, Is.True, $"Failed for {testCase.Domain}");
-            Assert.That(result.ContactId, Is.Not.Null.And.Not.Empty, $"No contact ID for {testCase.Domain}");
+                Assert.That(result.Success, Is.True, $"Failed for {testCase.Domain}");
+                Assert.That(result.ContactId, Is.Not.Null.And.Not.Empty, $"No contact ID for {testCase.Domain}");
+
+                createdContactIds.Add(result.ContactId);
+            }
+        }
+        finally
+        {
+            foreach (var contactId in createdContactIds)
+            {
+                try
+                {
+                    await TestHelpers.DeleteTestContact(contactId, apiKey);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to clean up contact {contactId}: {ex.Message}");
+                }
+            }
         }
     }
 
