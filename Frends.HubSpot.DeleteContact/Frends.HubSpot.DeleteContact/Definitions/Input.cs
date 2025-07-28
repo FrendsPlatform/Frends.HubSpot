@@ -1,25 +1,16 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Frends.HubSpot.DeleteContact.Definitions;
 
 /// <summary>
-/// Essential parameters.
+/// Input parameters for deleting a HubSpot contact.
 /// </summary>
 public class Input
 {
     /// <summary>
-    /// The input string to be repeated and output.
+    /// The unique Id of the contact to delete.
     /// </summary>
-    /// <example>foobar</example>
-    [DisplayFormat(DataFormatString = "Text")]
-    [DefaultValue("Lorem ipsum dolor sit amet.")]
-    public string Content { get; set; }
-
-    /// <summary>
-    /// Number of times to repeat the input string.
-    /// </summary>
-    /// <example>2</example>
-    [DefaultValue(3)]
-    public int Repeat { get; set; }
+    /// <example>1234567890</example>
+    [DisplayFormat(DataFormatString = "text")]
+    public string ContactId { get; set; }
 }

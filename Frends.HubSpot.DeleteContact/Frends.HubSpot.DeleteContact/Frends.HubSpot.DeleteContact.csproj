@@ -11,12 +11,16 @@
         <PackageTags>Frends</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <Description>Description of the Task</Description>
+        <Description>Frends task for deleting a contact in HubSpot</Description>
         <PackageProjectUrl>https://frends.com/</PackageProjectUrl>
         <RepositoryUrl>https://github.com/FrendsPlatform/Frends.HubSpot/tree/main/Frends.HubSpot.DeleteContact</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>
+		<PackageReference Include="dotenv.net" Version="4.0.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="NUnit" Version="4.3.2" />
+		<PackageReference Include="NUnit3TestAdapter" Version="5.0.0" />
         <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -34,6 +38,7 @@
         <None Include="FrendsTaskMetadata.json" Pack="true" PackagePath="/">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+		<None Include="..\CHANGELOG.md" Pack="true" PackagePath="/" />
     </ItemGroup>
 
 </Project>
