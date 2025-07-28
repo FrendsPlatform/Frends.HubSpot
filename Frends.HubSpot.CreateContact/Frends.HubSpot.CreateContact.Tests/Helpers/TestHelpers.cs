@@ -21,20 +21,19 @@ namespace Frends.HubSpot.CreateContact.Tests.Helpers
         /// <returns>Task representing the asynchronous operation.</returns>
         public static async Task DeleteTestContact(string contactId, string apiKey, string baseUrl = "https://api.hubapi.com", bool hardDelete = true, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(contactId))
-                return;
-
             if (string.IsNullOrWhiteSpace(apiKey))
-                throw new ArgumentException("Api Key is required", nameof(apiKey));
+                throw new Exception("API Key is required");
 
             if (string.IsNullOrWhiteSpace(baseUrl))
-                throw new ArgumentException("Base Url is required", nameof(baseUrl));
+                throw new Exception("Base URL is required");
+
+            if (string.IsNullOrWhiteSpace(contactId))
+                throw new Exception("ContactId is required");
 
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 
-            var endpoint = $"{baseUrl.TrimEnd('/')}/crm/v3/objects/contacts/{contactId}"
-                        + (hardDelete ? "?hardDelete=true" : string.Empty);
+            var endpoint = $"{baseUrl.TrimEnd('/')}/crm/v3/objects/contacts/{contactId}" + (hardDelete ? "?hardDelete=true" : string.Empty);
 
             var response = await client.DeleteAsync(endpoint, cancellationToken);
 
