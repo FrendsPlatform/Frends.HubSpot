@@ -20,7 +20,7 @@ public class Result
     }
 
     /// <summary>
-    /// Indicates whether the retrieval was successful.
+    /// Indicates whether contact creation was successful.
     /// </summary>
     /// <example>true</example>
     public bool Success { get; set; }
