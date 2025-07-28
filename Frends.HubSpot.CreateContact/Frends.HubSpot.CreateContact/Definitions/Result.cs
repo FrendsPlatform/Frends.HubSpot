@@ -28,7 +28,7 @@ public class Result
     /// <summary>
     /// Unique Id of the created contact.
     /// </summary>
-    /// <example>true</example>
+    /// <example>123456789</example>
     public string ContactId { get; set; }
 
     /// <summary>
