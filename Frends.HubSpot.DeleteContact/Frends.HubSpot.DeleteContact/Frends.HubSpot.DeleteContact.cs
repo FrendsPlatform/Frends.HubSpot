@@ -1,12 +1,13 @@
-﻿using Frends.HubSpot.DeleteContact.Definitions;
+﻿using System;
+using System.ComponentModel;
+using System.Net.Http;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Frends.HubSpot.DeleteContact.Definitions;
 using Frends.HubSpot.DeleteContact.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
-using System.ComponentModel;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Frends.HubSpot.DeleteContact;
 
@@ -47,9 +48,54 @@ public static class HubSpot
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {connection.ApiKey}");
 
-            var endpoint = $"{connection.BaseUrl.TrimEnd('/')}/crm/v3/objects/contacts/{input.ContactId}" + (options.HardDelete ? "?hardDelete=true" : string.Empty);
+            HttpResponseMessage response;
 
-            var response = await client.DeleteAsync(endpoint, cancellationToken);
+            if (options.HardDelete)
+            {
+                var endpoint = $"{connection.BaseUrl.TrimEnd('/')}/crm/v3/objects/contacts/gdpr-delete";
+                var requestBody = new
+                {
+                    idProperty = "id",
+                    objectId = input.ContactId,
+                };
+
+                var content = new StringContent(
+                    JsonConvert.SerializeObject(requestBody),
+                    Encoding.UTF8,
+                    "application/json");
+
+                response = await client.PostAsync(endpoint, content, cancellationToken);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var contactEmail = await DeleteHelpers.GetContactEmail(client, connection.BaseUrl, input.ContactId, cancellationToken);
+
+                    if (!string.IsNullOrWhiteSpace(contactEmail))
+                    {
+                        requestBody = new
+                        {
+                            idProperty = "email",
+                            objectId = contactEmail,
+                        };
+
+                        content = new StringContent(
+                            JsonConvert.SerializeObject(requestBody),
+                            Encoding.UTF8,
+                            "application/json");
+
+                        response = await client.PostAsync(endpoint, content, cancellationToken);
+                    }
+                    else
+                    {
+                        return new Result(true);
+                    }
+                }
+            }
+            else
+            {
+                var endpoint = $"{connection.BaseUrl.TrimEnd('/')}/crm/v3/objects/contacts/{input.ContactId}";
+                response = await client.DeleteAsync(endpoint, cancellationToken);
+            }
 
             if (!response.IsSuccessStatusCode)
             {

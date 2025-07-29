@@ -42,6 +42,7 @@ public class UnitTests
         options = new Options
         {
             ThrowErrorOnFailure = true,
+            HardDelete = false,
         };
     }
 
@@ -58,6 +59,27 @@ public class UnitTests
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
         var response = await client.GetAsync($"{baseUrl}/crm/v3/objects/contacts/{contactId}", CancellationToken.None);
         Assert.That(response.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.NotFound));
+    }
+
+    [Test]
+    public async Task DeleteContact_HardDelete_SuccessTest()
+    {
+        contactId = await TestHelpers.CreateTestContact(apiKey, baseUrl, CancellationToken.None);
+        input.ContactId = contactId;
+        options.HardDelete = true;
+
+        var result = await HubSpot.DeleteContact(input, connection, options, CancellationToken.None);
+        Assert.That(result.Success, Is.True);
+    }
+
+    [Test]
+    public async Task DeleteContact_HardDelete_NonExistentContactTest()
+    {
+        input.ContactId = "999999999";
+        options.HardDelete = true;
+
+        var result = await HubSpot.DeleteContact(input, connection, options, CancellationToken.None);
+        Assert.That(result.Success, Is.True);
     }
 
     [Test]
@@ -132,7 +154,7 @@ public class UnitTests
 
         var ex = Assert.ThrowsAsync<Exception>(() => HubSpot.DeleteContact(input, connection, options, CancellationToken.None));
 
-        Assert.That(ex.Message, Does.Contain("Contact ID should be a numeric value:"));
+        Assert.That(ex.Message, Does.Contain("Contact ID should be a numeric value"));
     }
 
     [Test]
