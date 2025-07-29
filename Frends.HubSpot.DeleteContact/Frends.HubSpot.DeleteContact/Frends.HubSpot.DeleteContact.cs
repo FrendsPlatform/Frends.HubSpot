@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Frends.HubSpot.DeleteContact.Definitions;
+using Frends.HubSpot.DeleteContact.Helpers;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.ComponentModel;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Frends.HubSpot.DeleteContact.Definitions;
-using Frends.HubSpot.DeleteContact.Helpers;
-using Newtonsoft.Json.Linq;
 
 namespace Frends.HubSpot.DeleteContact;
 
@@ -40,6 +41,9 @@ public static class HubSpot
             if (string.IsNullOrWhiteSpace(input.ContactId))
                 throw new Exception("ContactId is required");
 
+            if (!long.TryParse(input.ContactId, out _))
+                throw new Exception($"Contact ID should be a numeric value: '{input.ContactId}'.");
+
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {connection.ApiKey}");
 
@@ -50,9 +54,23 @@ public static class HubSpot
             if (!response.IsSuccessStatusCode)
             {
                 var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
-                var errorMessage = JObject.Parse(responseContent)?["message"]?.ToString() ?? $"HTTP {(int)response.StatusCode} - {response.ReasonPhrase}";
 
-                throw new Exception($"HubSpot API error: {errorMessage}");
+                try
+                {
+                    var responseJson = JObject.Parse(responseContent);
+                    var error = responseJson["message"]?.ToString() ?? responseContent;
+
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        return new Result(true);
+                    }
+
+                    throw new Exception($"HubSpot API error: {response.StatusCode} - {error}");
+                }
+                catch (JsonReaderException)
+                {
+                    throw new Exception($"HubSpot API error: {response.StatusCode} - {responseContent}");
+                }
             }
 
             return new Result(true);

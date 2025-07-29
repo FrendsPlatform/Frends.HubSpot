@@ -49,18 +49,14 @@ public class UnitTests
     public async Task DeleteContact_SuccessTest()
     {
         contactId = await TestHelpers.CreateTestContact(apiKey, baseUrl, CancellationToken.None);
-
         input.ContactId = contactId;
 
         var result = await HubSpot.DeleteContact(input, connection, options, CancellationToken.None);
-
         Assert.That(result.Success, Is.True);
 
         using var client = new HttpClient();
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
-
         var response = await client.GetAsync($"{baseUrl}/crm/v3/objects/contacts/{contactId}", CancellationToken.None);
-
         Assert.That(response.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.NotFound));
     }
 
@@ -110,12 +106,33 @@ public class UnitTests
     public async Task DeleteContact_NonExistentContactTest()
     {
         input.ContactId = "999999999";
+        var result = await HubSpot.DeleteContact(input, connection, options, CancellationToken.None);
+
+        Assert.That(result.Success, Is.True);
+    }
+
+    [Test]
+    public async Task DeleteContact_InvalidIdFormatTest()
+    {
+        input.ContactId = "invalid_id_format";
         options.ThrowErrorOnFailure = false;
 
         var result = await HubSpot.DeleteContact(input, connection, options, CancellationToken.None);
 
-        Assert.That(result.Success, Is.True);
-        Assert.That(result.Error, Is.Null);
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.Error, Is.Not.Null);
+        Assert.That(result.Error.Message, Does.Contain("Contact ID should be a numeric value"));
+    }
+
+    [Test]
+    public void DeleteContact_InvalidIdFormatThrowsTest()
+    {
+        input.ContactId = "invalid_id_format";
+        options.ThrowErrorOnFailure = true;
+
+        var ex = Assert.ThrowsAsync<Exception>(() => HubSpot.DeleteContact(input, connection, options, CancellationToken.None));
+
+        Assert.That(ex.Message, Does.Contain("Contact ID should be a numeric value:"));
     }
 
     [Test]
