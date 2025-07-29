@@ -19,7 +19,7 @@ namespace Frends.HubSpot.CreateContact.Tests.Helpers
         /// <param name="hardDelete">If true, permanently deletes the contact (cannot be recovered).</param>
         /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
         /// <returns>Task representing the asynchronous operation.</returns>
-        public static async Task DeleteTestContact(string contactId, string apiKey, string baseUrl = "https://api.hubapi.com", bool hardDelete = true, CancellationToken cancellationToken = default)
+        public static async Task DeleteTestContact(string contactId, string apiKey, string baseUrl, bool hardDelete, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(apiKey))
                 throw new Exception("API Key is required");

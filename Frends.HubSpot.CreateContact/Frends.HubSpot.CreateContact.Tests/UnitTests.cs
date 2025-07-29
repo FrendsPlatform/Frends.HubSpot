@@ -57,7 +57,7 @@ public class UnitTests
     {
         try
         {
-            await TestHelpers.DeleteTestContact(contactId, apiKey);
+            await TestHelpers.DeleteTestContact(contactId, apiKey, baseUrl, false, CancellationToken.None);
         }
         catch (Exception ex)
         {
@@ -95,7 +95,7 @@ public class UnitTests
                 ""email"": ""testcontact@{testCase.Domain}"",
                 ""firstname"": ""Test"",
                 ""lastname"": ""User""
-            }}";
+                }}";
 
                 var result = await HubSpot.CreateContact(input, connection, options, CancellationToken.None);
 
@@ -111,7 +111,7 @@ public class UnitTests
             {
                 try
                 {
-                    await TestHelpers.DeleteTestContact(contactId, apiKey);
+                    await TestHelpers.DeleteTestContact(contactId, apiKey, baseUrl, false, CancellationToken.None);
                 }
                 catch (Exception ex)
                 {
