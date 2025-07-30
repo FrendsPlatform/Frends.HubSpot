@@ -3,18 +3,23 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Frends.HubSpot.GetContacts.Definitions;
 
-// TODO: Remove this class if the task does not make connections
-
 /// <summary>
-/// Connection parameters.
+/// Connection parameters for HubSpot GetContacts task.
 /// </summary>
 public class Connection
 {
     /// <summary>
-    /// Connection string to the target service (e.g., database, API endpoint).
+    /// HubSpot Private App access token.
     /// </summary>
-    /// <example>Host=127.0.0.1;Port=5432</example>
+    /// <example>xxx-xxx-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</example>
     [DisplayFormat(DataFormatString = "Text")]
-    [DefaultValue("")]
-    public string ConnectionString { get; set; }
+    [PasswordPropertyText]
+    public string ApiKey { get; set; }
+
+    /// <summary>
+    /// Base URL for the API.
+    /// </summary>
+    /// <example>https://api.hubapi.com.</example>
+    [DisplayFormat(DataFormatString = "Text")]
+    public string BaseUrl { get; set; }
 }

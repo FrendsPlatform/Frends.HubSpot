@@ -1,25 +1,34 @@
 ﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 
 namespace Frends.HubSpot.GetContacts.Definitions;
 
 /// <summary>
-/// Essential parameters.
+/// Input parameters for retrieving HubSpot contacts.
 /// </summary>
 public class Input
 {
     /// <summary>
-    /// The input string to be repeated and output.
+    /// Optional. OData-style filter string to narrow results.
     /// </summary>
-    /// <example>foobar</example>
-    [DisplayFormat(DataFormatString = "Text")]
-    [DefaultValue("Lorem ipsum dolor sit amet.")]
-    public string Content { get; set; }
+    /// <example>email eq 'test@example.com'</example>
+    public string FilterQuery { get; set; }
 
     /// <summary>
-    /// Number of times to repeat the input string.
+    /// Optional. Specific contact properties to retrieve.
     /// </summary>
-    /// <example>2</example>
-    [DefaultValue(3)]
-    public int Repeat { get; set; }
+    /// <example>new string[] { "email", "firstname", "lastname", "company" }</example>
+    public string[] Properties { get; set; }
+
+    /// <summary>
+    /// Optional. Maximum number of contacts to return.
+    /// </summary>
+    /// <example>50</example>
+    [DefaultValue(100)]
+    public int Limit { get; set; } = 100;
+
+    /// <summary>
+    /// Optional. Paging cursor for fetching the next page.
+    /// </summary>
+    /// <example>"MjAyMy0wMS0wMVQwMDowMDowMC4wMDAtMTI6MDA"</example>
+    public string After { get; set; }
 }

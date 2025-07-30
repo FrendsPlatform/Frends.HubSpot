@@ -9,25 +9,23 @@ namespace Frends.HubSpot.GetContacts.Definitions;
 public class Options
 {
     /// <summary>
-    /// Delimiter to use between the repeated strings.
+    /// Optional. Whether to include archived records. Default is false.
     /// </summary>
-    /// <example>,</example>
-    [DisplayFormat(DataFormatString = "Text")]
-    [DefaultValue(" ")]
-    public string Delimiter { get; set; }
+    /// <example>true</example>
+    [DefaultValue(false)]
+    public bool IncludeArchived { get; set; } = false;
 
     /// <summary>
-    /// Whether to throw an error on failure.
+    /// Whether to throw an error on failure. True by default.
     /// </summary>
     /// <example>false</example>
     [DefaultValue(true)]
-    public bool ThrowErrorOnFailure { get; set; }
+    public bool ThrowErrorOnFailure { get; set; } = true;
 
     /// <summary>
     /// Overrides the error message on failure.
     /// </summary>
-    /// <example>Custom error message</example>
+    /// <example>Failed to delete contact.</example>
     [DisplayFormat(DataFormatString = "Text")]
-    [DefaultValue("")]
     public string ErrorMessageOnFailure { get; set; }
 }
