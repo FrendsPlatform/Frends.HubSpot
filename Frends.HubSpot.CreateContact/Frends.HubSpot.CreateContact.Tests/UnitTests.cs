@@ -57,7 +57,7 @@ public class UnitTests
     {
         try
         {
-            await TestHelpers.DeleteTestContact(contactId, apiKey, baseUrl, false, CancellationToken.None);
+            await TestHelpers.DeleteTestContact(contactId, apiKey, baseUrl, true, CancellationToken.None);
         }
         catch (Exception ex)
         {

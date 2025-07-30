@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Frends.HubSpot.CreateContact.Tests.Helpers
 {
@@ -30,12 +32,35 @@ namespace Frends.HubSpot.CreateContact.Tests.Helpers
             if (string.IsNullOrWhiteSpace(contactId))
                 throw new Exception("ContactId is required");
 
+            if (!long.TryParse(contactId, out _))
+                throw new Exception($"Contact ID should be a numeric value: '{contactId}'.");
+
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 
-            var endpoint = $"{baseUrl.TrimEnd('/')}/crm/v3/objects/contacts/{contactId}" + (hardDelete ? "?hardDelete=true" : string.Empty);
+            HttpResponseMessage response;
 
-            var response = await client.DeleteAsync(endpoint, cancellationToken);
+            if (hardDelete)
+            {
+                var endpoint = $"{baseUrl.TrimEnd('/')}/crm/v3/objects/contacts/gdpr-delete";
+                var requestBody = new
+                {
+                    idProperty = "id",
+                    objectId = contactId,
+                };
+
+                var content = new StringContent(
+                    JsonConvert.SerializeObject(requestBody),
+                    Encoding.UTF8,
+                    "application/json");
+
+                response = await client.PostAsync(endpoint, content, cancellationToken);
+            }
+            else
+            {
+                var endpoint = $"{baseUrl.TrimEnd('/')}/crm/v3/objects/contacts/{contactId}";
+                response = await client.DeleteAsync(endpoint, cancellationToken);
+            }
 
             if (!response.IsSuccessStatusCode)
             {
