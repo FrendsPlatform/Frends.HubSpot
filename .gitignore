@@ -406,3 +406,4 @@ FodyWeavers.xsd
 *.sln.iml
 /Frends.HubSpot.CreateContact/Frends.HubSpot.CreateContact.Tests/.env
 /Frends.HubSpot.DeleteContact/Frends.HubSpot.DeleteContact.Tests/.env
+/Frends.HubSpot.GetContacts/Frends.HubSpot.GetContacts.Tests/.env
