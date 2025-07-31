@@ -1,10 +1,10 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Frends.HubSpot.GetContacts.Tests.Helpers
 {
@@ -72,50 +72,128 @@ namespace Frends.HubSpot.GetContacts.Tests.Helpers
         /// <returns>Task representing the asynchronous operation.</returns>
         public static async Task DeleteTestContact(string contactId, string apiKey, string baseUrl, bool hardDelete, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(apiKey))
-                throw new Exception("API Key is required");
-
-            if (string.IsNullOrWhiteSpace(baseUrl))
-                throw new Exception("Base URL is required");
-
-            if (string.IsNullOrWhiteSpace(contactId))
-                throw new Exception("ContactId is required");
-
-            if (!long.TryParse(contactId, out _))
-                throw new Exception($"Contact ID should be a numeric value: '{contactId}'.");
-
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
-
-            HttpResponseMessage response;
-
-            if (hardDelete)
+            try
             {
-                var endpoint = $"{baseUrl.TrimEnd('/')}/crm/v3/objects/contacts/gdpr-delete";
-                var requestBody = new
+                if (string.IsNullOrWhiteSpace(apiKey))
+                    throw new Exception("API Key is required");
+
+                if (string.IsNullOrWhiteSpace(baseUrl))
+                    throw new Exception("Base URL is required");
+
+                if (string.IsNullOrWhiteSpace(contactId))
+                    throw new Exception("ContactId is required");
+
+                if (!long.TryParse(contactId, out _))
+                    throw new Exception($"Contact ID should be a numeric value: '{contactId}'.");
+
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+
+                HttpResponseMessage response;
+
+                if (hardDelete)
                 {
-                    idProperty = "id",
-                    objectId = contactId,
-                };
+                    var endpoint = $"{baseUrl.TrimEnd('/')}/crm/v3/objects/contacts/gdpr-delete";
+                    var requestBody = new
+                    {
+                        idProperty = "id",
+                        objectId = contactId,
+                    };
 
-                var content = new StringContent(
-                    JsonConvert.SerializeObject(requestBody),
-                    Encoding.UTF8,
-                    "application/json");
+                    var content = new StringContent(
+                        JsonConvert.SerializeObject(requestBody),
+                        Encoding.UTF8,
+                        "application/json");
 
-                response = await client.PostAsync(endpoint, content, cancellationToken);
+                    response = await client.PostAsync(endpoint, content, cancellationToken);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var contactEmail = await GetContactEmail(client, baseUrl, contactId, cancellationToken);
+
+                        if (!string.IsNullOrWhiteSpace(contactEmail))
+                        {
+                            requestBody = new
+                            {
+                                idProperty = "email",
+                                objectId = contactEmail,
+                            };
+
+                            content = new StringContent(
+                                JsonConvert.SerializeObject(requestBody),
+                                Encoding.UTF8,
+                                "application/json");
+
+                            response = await client.PostAsync(endpoint, content, cancellationToken);
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    var endpoint = $"{baseUrl.TrimEnd('/')}/crm/v3/objects/contacts/{contactId}";
+                    response = await client.DeleteAsync(endpoint, cancellationToken);
+                }
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+
+                    try
+                    {
+                        var responseJson = JObject.Parse(responseContent);
+                        var error = responseJson["message"]?.ToString() ?? responseContent;
+
+                        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                        {
+                            return;
+                        }
+
+                        throw new Exception($"HubSpot API error: {response.StatusCode} - {error}");
+                    }
+                    catch (JsonReaderException)
+                    {
+                        throw new Exception($"HubSpot API error: {response.StatusCode} - {responseContent}");
+                    }
+                }
             }
-            else
+            catch (Exception ex)
             {
-                var endpoint = $"{baseUrl.TrimEnd('/')}/crm/v3/objects/contacts/{contactId}";
-                response = await client.DeleteAsync(endpoint, cancellationToken);
+                throw new Exception($"Failed to delete test contact: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Attempts to retrieve the email address of a HubSpot contact using their contact ID.
+        /// </summary>
+        /// <param name="client">The Http client configured with authorization headers.</param>
+        /// <param name="baseUrl">Base Url for the API, typically https://api.hubapi.com.</param>
+        /// <param name="contactId">The unique Id of the contact to look up.</param>
+        /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
+        /// <returns>The email address of the contact if found, otherwise null.</returns>
+        public static async Task<string> GetContactEmail(HttpClient client, string baseUrl, string contactId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var endpoint = $"{baseUrl.TrimEnd('/')}/crm/v3/objects/contacts/{contactId}?properties=email";
+                var response = await client.GetAsync(endpoint, cancellationToken);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                    var responseJson = JObject.Parse(responseContent);
+                    return responseJson["properties"]?["email"]?.ToString();
+                }
+            }
+            catch
+            {
+                // Ignore errors and return null
             }
 
-            if (!response.IsSuccessStatusCode)
-            {
-                var error = await response.Content.ReadAsStringAsync(cancellationToken);
-                throw new HttpRequestException($"Failed to delete test contact {contactId}. " + $"Status: {response.StatusCode}. " + $"Error: {error}");
-            }
+            return null;
         }
     }
 }
