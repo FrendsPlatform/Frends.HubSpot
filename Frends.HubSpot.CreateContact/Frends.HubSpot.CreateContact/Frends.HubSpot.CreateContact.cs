@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Frends.HubSpot.CreateContact.Definitions;
@@ -47,7 +46,7 @@ public static class HubSpot
             {
                 contactProperties = JObject.Parse(input.ContactData);
             }
-            catch (JsonException ex)
+            catch (Newtonsoft.Json.JsonReaderException ex)
             {
                 throw new Exception("Invalid JSON format in ContactData", ex);
             }

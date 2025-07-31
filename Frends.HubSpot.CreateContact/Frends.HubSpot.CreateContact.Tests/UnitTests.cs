@@ -186,7 +186,7 @@ public class UnitTests
 
         var ex = Assert.ThrowsAsync<Exception>(() => HubSpot.CreateContact(invalidInput, connection, options, CancellationToken.None));
 
-        Assert.That(ex.Message, Does.Contain("Invalid character after parsing property name"));
+        Assert.That(ex.Message, Does.Contain("Invalid JSON format in ContactData"));
     }
 
     [Test]
