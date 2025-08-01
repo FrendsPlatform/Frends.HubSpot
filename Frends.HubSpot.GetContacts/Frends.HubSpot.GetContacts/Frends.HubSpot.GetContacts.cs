@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Frends.HubSpot.GetContacts.Definitions;
@@ -40,31 +41,73 @@ public static class HubSpot
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {connection.ApiKey}");
 
-            var url = $"{connection.BaseUrl.TrimEnd('/')}/crm/v3/objects/contacts";
-            var queryParams = System.Web.HttpUtility.ParseQueryString(string.Empty);
+            HttpResponseMessage response;
+            JObject responseJson;
+            string url;
 
             if (!string.IsNullOrWhiteSpace(input.FilterQuery))
-                queryParams.Add("filter", input.FilterQuery);
+            {
+                url = $"{connection.BaseUrl.TrimEnd('/')}/crm/v3/objects/contacts/search";
 
-            if (input.Properties != null && input.Properties.Length > 0)
-                queryParams.Add("properties", string.Join(",", input.Properties));
+                var (propertyName, @operator, value) = FilterParser.ParseFilterQuery(input.FilterQuery);
 
-            if (input.Limit > 0)
-                queryParams.Add("limit", input.Limit.ToString());
+                var requestBody = new JObject
+                {
+                    ["filterGroups"] = new JArray
+                    {
+                        new JObject
+                        {
+                            ["filters"] = new JArray
+                            {
+                                new JObject
+                                {
+                                    ["propertyName"] = propertyName,
+                                    ["operator"] = @operator,
+                                    ["value"] = value,
+                                },
+                            },
+                        },
+                    },
+                    ["properties"] = input.Properties != null ? new JArray(input.Properties) : [],
+                    ["limit"] = input.Limit,
+                };
 
-            if (!string.IsNullOrWhiteSpace(input.After))
-                queryParams.Add("after", input.After);
+                if (!string.IsNullOrWhiteSpace(input.After))
+                    requestBody["after"] = input.After;
 
-            if (queryParams.Count > 0)
-                url += "?" + queryParams.ToString();
+                var content = new StringContent(requestBody.ToString(), Encoding.UTF8, "application/json");
 
-            var response = await client.GetAsync(url, cancellationToken);
+                response = await client.PostAsync(url, content, cancellationToken);
+            }
+            else
+            {
+                url = $"{connection.BaseUrl.TrimEnd('/')}/crm/v3/objects/contacts";
+                var queryParams = System.Web.HttpUtility.ParseQueryString(string.Empty);
+
+                if (input.Properties != null && input.Properties.Length > 0)
+                    queryParams.Add("properties", string.Join(",", input.Properties));
+
+                if (input.Limit > 0)
+                    queryParams.Add("limit", input.Limit.ToString());
+
+                if (!string.IsNullOrWhiteSpace(input.After))
+                    queryParams.Add("after", input.After);
+
+                if (queryParams.Count > 0)
+                    url += "?" + queryParams.ToString();
+
+                response = await client.GetAsync(url, cancellationToken);
+            }
+
             var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
-            var responseJson = JObject.Parse(responseContent);
+            responseJson = JObject.Parse(responseContent);
 
             if (!response.IsSuccessStatusCode)
             {
-                var error = responseJson["message"]?.ToString() ?? "Unknown error";
+                var error = responseJson["message"]?.ToString()
+                    ?? responseJson["errors"]?.First?["message"]?.ToString()
+                    ?? "Unknown error";
+
                 throw new Exception($"HubSpot API error: {response.StatusCode} - {error}");
             }
 

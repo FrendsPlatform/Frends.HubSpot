@@ -8,7 +8,7 @@ namespace Frends.HubSpot.GetContacts.Definitions;
 public class Input
 {
     /// <summary>
-    /// Optional. OData-style filter string to narrow results.
+    /// Optional. Filter query to narrow search results in a simple expression format: `property operator 'value'`
     /// </summary>
     /// <example>email eq 'test@example.com'</example>
     public string FilterQuery { get; set; }

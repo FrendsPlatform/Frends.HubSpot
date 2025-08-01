@@ -1,5 +1,14 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
+using dotenv.net;
 using Frends.HubSpot.GetContacts.Definitions;
+using Frends.HubSpot.GetContacts.Helpers;
+using Frends.HubSpot.GetContacts.Tests.Helpers;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
 namespace Frends.HubSpot.GetContacts.Tests;
@@ -7,17 +16,245 @@ namespace Frends.HubSpot.GetContacts.Tests;
 [TestFixture]
 public class UnitTests
 {
-    [Test]
-    public void ShouldRepeatContentWithDelimiter()
+    private readonly string baseUrl = "https://api.hubapi.com";
+    private readonly string apiKey;
+    private Connection connection;
+    private Input input;
+    private Options options;
+    private List<(string Id, string Email)> testContacts = [];
+
+    public UnitTests()
     {
-        var input = new Input { Content = "foobar", Repeat = 3 };
+        DotEnv.Load(options: new DotEnvOptions(probeForEnv: true));
+        apiKey = Environment.GetEnvironmentVariable("FRENDS_HubSpot_privateAccessToken");
+    }
 
-        var connection = new Connection { ConnectionString = "Host=127.0.0.1;Port=12345" };
+    [SetUp]
+    public void Setup()
+    {
+        connection = new Connection
+        {
+            BaseUrl = baseUrl,
+            ApiKey = apiKey,
+        };
 
-        var options = new Options { Delimiter = ", ", ThrowErrorOnFailure = true, ErrorMessageOnFailure = null };
+        input = new Input
+        {
+            Properties = ["email", "firstname", "lastname"],
+            Limit = 5,
+        };
 
-        var result = HubSpot.GetContacts(input, connection, options, CancellationToken.None);
+        options = new Options
+        {
+            ThrowErrorOnFailure = true,
+        };
+    }
 
-        Assert.That(result.Output, Is.EqualTo("foobar, foobar, foobar"));
+    [TearDown]
+    public async Task Cleanup()
+    {
+        foreach (var (id, _) in testContacts)
+        {
+            try
+            {
+                await TestHelpers.DeleteTestContact(id, apiKey, baseUrl, true, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to delete test contact {id}: {ex.Message}");
+            }
+        }
+
+        testContacts.Clear();
+    }
+
+    [Test]
+    public async Task GetContacts_SuccessTest()
+    {
+        await CreateTestContacts(3);
+        var result = await HubSpot.GetContacts(input, connection, options, CancellationToken.None);
+
+        Assert.That(result.Success, Is.True);
+        Assert.That(result.Contacts, Is.Not.Null);
+        Assert.That(result.Contacts.Count, Is.GreaterThanOrEqualTo(testContacts.Count));
+    }
+
+    [Test]
+    public async Task GetContacts_WithSpecificProperties_SuccessTest()
+    {
+        input.Properties = ["email", "firstname"];
+
+        var result = await HubSpot.GetContacts(input, connection, options, CancellationToken.None);
+
+        Assert.That(result.Success, Is.True);
+        Assert.That(result.Contacts, Is.Not.Null);
+
+        if (result.Contacts is JArray contactsArray && contactsArray.Count > 0)
+        {
+            var firstContact = contactsArray[0];
+            Assert.That(firstContact["properties"]?["email"], Is.Not.Null);
+            Assert.That(firstContact["properties"]?["firstname"], Is.Not.Null);
+            Assert.That(firstContact["properties"]?["lastname"], Is.Null);
+        }
+    }
+
+    [Test]
+    public async Task GetContacts_WithFilterQuery_SuccessTest()
+    {
+        await CreateTestContacts(1);
+        var (expectedId, expectedEmail) = testContacts[0];
+
+        var maxAttempts = 5;
+        var attempt = 0;
+        Result result = null;
+
+        while (attempt < maxAttempts)
+        {
+            input.FilterQuery = $"email eq '{expectedEmail}'";
+            input.Limit = 1;
+
+            result = await HubSpot.GetContacts(input, connection, options, CancellationToken.None);
+
+            if (result.Contacts.Count() == 1)
+                break;
+
+            attempt++;
+            await Task.Delay(2000 * attempt);
+        }
+
+        Assert.That(result.Success, Is.True);
+        Assert.That(result.Contacts, Is.Not.Null);
+        Assert.That(result.Contacts.Count(), Is.EqualTo(1), $"Failed to find contact after {maxAttempts} attempts");
+
+        var resultId = result.Contacts.First()["id"]?.ToString();
+        var resultEmail = result.Contacts.First()["properties"]?["email"]?.ToString();
+
+        Assert.That(resultId, Is.EqualTo(expectedId));
+        Assert.That(resultEmail, Is.EqualTo(expectedEmail));
+    }
+
+    [Test]
+    public async Task GetContacts_WithLimit_SuccessTest()
+    {
+        await CreateTestContacts(2);
+        input.Limit = 2;
+
+        var result = await HubSpot.GetContacts(input, connection, options, CancellationToken.None);
+
+        Assert.That(result.Success, Is.True);
+        Assert.That(result.Contacts, Is.Not.Null);
+        Assert.That(result.Contacts.Count, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task GetContacts_WithPagination_SuccessTest()
+    {
+        await CreateTestContacts(3);
+        input.Limit = 2;
+
+        var firstPage = await HubSpot.GetContacts(input, connection, options, CancellationToken.None);
+        Assert.That(firstPage.Success, Is.True);
+        Assert.That(firstPage.Contacts, Is.Not.Null);
+        Assert.That(firstPage.Contacts.Count, Is.EqualTo(2));
+
+        if (firstPage.HasMore)
+        {
+            input.After = firstPage.NextPageCursor;
+            var secondPage = await HubSpot.GetContacts(input, connection, options, CancellationToken.None);
+
+            Assert.That(secondPage.Success, Is.True);
+            Assert.That(secondPage.Contacts, Is.Not.Null);
+            Assert.That(secondPage.Contacts.Count, Is.GreaterThanOrEqualTo(1));
+        }
+    }
+
+    [Test]
+    public void GetContacts_ApiKeyValidationFailureTest()
+    {
+        var invalidConnection = new Connection
+        {
+            BaseUrl = baseUrl,
+            ApiKey = null,
+        };
+
+        var ex = Assert.ThrowsAsync<Exception>(() => HubSpot.GetContacts(input, invalidConnection, options, CancellationToken.None));
+
+        Assert.That(ex.Message, Does.Contain("API Key is required"));
+    }
+
+    [Test]
+    public void GetContacts_BaseUrlValidationFailureTest()
+    {
+        var invalidConnection = new Connection
+        {
+            BaseUrl = null,
+            ApiKey = apiKey,
+        };
+
+        var ex = Assert.ThrowsAsync<Exception>(() => HubSpot.GetContacts(input, invalidConnection, options, CancellationToken.None));
+
+        Assert.That(ex.Message, Does.Contain("Base URL is required"));
+    }
+
+    [Test]
+    public async Task GetContacts_ErrorHandlingTest()
+    {
+        options.ThrowErrorOnFailure = false;
+        options.ErrorMessageOnFailure = "Custom error message";
+
+        input.FilterQuery = "invalid_property eq 'value'";
+
+        var result = await HubSpot.GetContacts(input, connection, options, CancellationToken.None);
+
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.Error, Is.Not.Null);
+        Assert.That(result.Error.Message, Does.Contain("Custom error message"));
+        Assert.That(result.Error.Message, Does.Contain("HubSpot API error"));
+    }
+
+    [Test]
+    public void Handle_WhenThrowErrorIsTrue_ThrowsException()
+    {
+        var ex = new Exception("Test exception");
+        const string customMessage = "Custom error context";
+
+        var thrownEx = Assert.Throws<Exception>(() => ErrorHandler.Handle(ex, true, customMessage));
+
+        Assert.That(thrownEx.Message, Is.EqualTo($"{customMessage} {ex.Message}"));
+        Assert.That(thrownEx.InnerException, Is.EqualTo(ex));
+    }
+
+    [Test]
+    public void Handle_WhenThrowErrorIsFalse_ReturnsErrorResult()
+    {
+        var ex = new Exception("Test exception");
+        const string customMessage = "Custom error context";
+
+        var result = ErrorHandler.Handle(ex, false, customMessage);
+
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.Contacts, Is.Null);
+        Assert.That(result.HasMore, Is.False);
+        Assert.That(result.NextPageCursor, Is.Null);
+        Assert.That(result.Error, Is.Not.Null);
+        Assert.That(result.Error.Message, Is.EqualTo($"{customMessage} {ex.Message}"));
+        Assert.That(result.Error.AdditionalInfo, Is.EqualTo(ex));
+    }
+
+    private async Task CreateTestContacts(int count)
+    {
+        var client = new HttpClient();
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+
+        for (int i = 0; i < count; i++)
+        {
+            var contactId = await TestHelpers.CreateTestContact(apiKey, baseUrl, CancellationToken.None);
+            var email = await TestHelpers.GetContactEmail(client, baseUrl, contactId, CancellationToken.None);
+
+            if (string.IsNullOrEmpty(email))
+                throw new Exception($"Failed to retrieve email for test contact ID: {contactId}");
+
+            testContacts.Add((contactId, email));
+        }
     }
 }

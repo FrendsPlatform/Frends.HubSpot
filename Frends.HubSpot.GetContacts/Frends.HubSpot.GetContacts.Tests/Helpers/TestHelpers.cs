@@ -22,12 +22,6 @@ namespace Frends.HubSpot.GetContacts.Tests.Helpers
         /// <returns>Contact Id used for testing delete functionality.</returns>
         public static async Task<string> CreateTestContact(string apiKey, string baseUrl, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(apiKey))
-                throw new ArgumentException("API Key is required");
-
-            if (string.IsNullOrWhiteSpace(baseUrl))
-                throw new ArgumentException("Base URL is required");
-
             var timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
             var contactProperties = JObject.Parse(
                 $@"{{
@@ -45,7 +39,7 @@ namespace Frends.HubSpot.GetContacts.Tests.Helpers
                 ["properties"] = contactProperties,
             };
 
-            var content = new StringContent(payload.ToString(), System.Text.Encoding.UTF8, "application/json");
+            var content = new StringContent(payload.ToString(), Encoding.UTF8, "application/json");
 
             var response = await client.PostAsync($"{baseUrl.TrimEnd('/')}/crm/v3/objects/contacts", content, cancellationToken);
 
@@ -74,18 +68,6 @@ namespace Frends.HubSpot.GetContacts.Tests.Helpers
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(apiKey))
-                    throw new Exception("API Key is required");
-
-                if (string.IsNullOrWhiteSpace(baseUrl))
-                    throw new Exception("Base URL is required");
-
-                if (string.IsNullOrWhiteSpace(contactId))
-                    throw new Exception("ContactId is required");
-
-                if (!long.TryParse(contactId, out _))
-                    throw new Exception($"Contact ID should be a numeric value: '{contactId}'.");
-
                 using var client = new HttpClient();
                 client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 
@@ -190,10 +172,35 @@ namespace Frends.HubSpot.GetContacts.Tests.Helpers
             }
             catch
             {
-                // Ignore errors and return null
+                return null;
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets a contact from HubSpot.
+        /// </summary>
+        /// <param name="contactId">The unique Id of the contact to retrieve.</param>
+        /// <param name="apiKey">HubSpot Private App access token.</param>
+        /// <param name="baseUrl">Base Url for HubSpot Api.</param>
+        /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
+        /// <returns>Task representing the asynchronous operation with the contact data.</returns>
+        public static async Task<string> GetTestContact(string contactId, string apiKey, string baseUrl, CancellationToken cancellationToken)
+        {
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+
+            var endpoint = $"{baseUrl.TrimEnd('/')}/crm/v3/objects/contacts/{contactId}";
+            var response = await client.GetAsync(endpoint, cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync(cancellationToken);
+                throw new HttpRequestException($"Failed to get test contact {contactId}. " + $"Status: {response.StatusCode}. " + $"Error: {error}");
+            }
+
+            return await response.Content.ReadAsStringAsync(cancellationToken);
         }
     }
 }
