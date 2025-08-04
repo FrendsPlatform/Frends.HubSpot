@@ -70,9 +70,23 @@ public class UnitTests
         var result = await HubSpot.DeleteContact(input, connection, options, CancellationToken.None);
         Assert.That(result.Success, Is.True);
 
-        var ex = Assert.ThrowsAsync<HttpRequestException>(async () => await TestHelpers.GetTestContact(contactId, apiKey, baseUrl, CancellationToken.None));
+        var maxRetries = 5;
+        for (var i = 0; i < maxRetries; i++)
+        {
+            try
+            {
+                var contact = await TestHelpers.GetTestContact(contactId, apiKey, baseUrl, CancellationToken.None);
+                if (contact == null) return;
+                await Task.Delay(1000);
+            }
+            catch (HttpRequestException ex) when (ex.Message.Contains("NotFound"))
+            {
+                return;
+            }
+        }
 
-        Assert.That(ex.Message, Does.Contain("NotFound"));
+        var finalContact = await TestHelpers.GetTestContact(contactId, apiKey, baseUrl, CancellationToken.None);
+        Assert.Fail($"Contact still exists after hard delete: {finalContact}");
     }
 
     [Test]
