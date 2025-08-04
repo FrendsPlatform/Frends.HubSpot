@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -37,7 +38,7 @@ internal static class TestHelpers
             ["properties"] = contactProperties,
         };
 
-        var content = new StringContent(payload.ToString(), System.Text.Encoding.UTF8, "application/json");
+        var content = new StringContent(payload.ToString(), Encoding.UTF8, "application/json");
 
         var response = await client.PostAsync($"{baseUrl.TrimEnd('/')}/crm/v3/objects/contacts", content, cancellationToken);
 
