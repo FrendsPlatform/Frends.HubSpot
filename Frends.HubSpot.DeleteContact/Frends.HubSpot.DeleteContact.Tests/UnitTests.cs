@@ -55,10 +55,9 @@ public class UnitTests
         var result = await HubSpot.DeleteContact(input, connection, options, CancellationToken.None);
         Assert.That(result.Success, Is.True);
 
-        using var client = new HttpClient();
-        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
-        var response = await client.GetAsync($"{baseUrl}/crm/v3/objects/contacts/{contactId}", CancellationToken.None);
-        Assert.That(response.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.NotFound));
+        var ex = Assert.ThrowsAsync<HttpRequestException>(async () => await TestHelpers.GetTestContact(contactId, apiKey, baseUrl, CancellationToken.None));
+
+        Assert.That(ex.Message, Does.Contain("NotFound"));
     }
 
     [Test]
@@ -70,6 +69,10 @@ public class UnitTests
 
         var result = await HubSpot.DeleteContact(input, connection, options, CancellationToken.None);
         Assert.That(result.Success, Is.True);
+
+        var ex = Assert.ThrowsAsync<HttpRequestException>(async () => await TestHelpers.GetTestContact(contactId, apiKey, baseUrl, CancellationToken.None));
+
+        Assert.That(ex.Message, Does.Contain("NotFound"));
     }
 
     [Test]
