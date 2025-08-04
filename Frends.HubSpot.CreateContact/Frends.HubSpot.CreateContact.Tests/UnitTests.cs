@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using dotenv.net;
@@ -11,6 +10,9 @@ using NUnit.Framework;
 
 namespace Frends.HubSpot.CreateContact.Tests;
 
+/// <summary>
+/// Test cases for HubSpot CreateContact task.
+/// </summary>
 [TestFixture]
 public class UnitTests
 {
@@ -56,14 +58,8 @@ public class UnitTests
     [TearDown]
     public async Task Cleanup()
     {
-        try
-        {
+        if (contactId != null)
             await TestHelpers.DeleteTestContact(contactId, apiKey, baseUrl, true, CancellationToken.None);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Cleanup failed: {ex.Message}");
-        }
     }
 
     [Test]
@@ -83,53 +79,44 @@ public class UnitTests
         Assert.That(testContactData["properties"]?["lastname"]?.ToString(), Is.EqualTo("User"));
     }
 
-    [Test]
-    public async Task CreateContact_WithCompanyAssociation_SuccessTest()
+    [TestCase("hubspot.com")]
+    [TestCase("example.com")]
+    [TestCase("testcompany.org")]
+    public async Task CreateContact_WithCompanyAssociation_SuccessTest(string domain)
     {
-        var testCases = new[]
-        {
-            new { Domain = "hubspot.com", ExpectedCompany = "HubSpot" },
-            new { Domain = "example.com", ExpectedCompany = "example.com" },
-            new { Domain = "testcompany.org", ExpectedCompany = "testcompany.org" },
-        };
-
-        var createdContactIds = new List<string>();
+        string contactId = null;
 
         try
         {
-            foreach (var testCase in testCases)
-            {
-                input.ContactData = $@"{{
-                    ""email"": ""testcontact@{testCase.Domain}"",
-                    ""firstname"": ""Test"",
-                    ""lastname"": ""User""
-                }}";
+            input.ContactData = $@"{{
+            ""email"": ""testcontact@{domain}"",
+            ""firstname"": ""Test"",
+            ""lastname"": ""User""
+        }}";
 
-                var result = await HubSpot.CreateContact(input, connection, options, CancellationToken.None);
+            var result = await HubSpot.CreateContact(input, connection, options, CancellationToken.None);
 
-                Assert.That(result.Success, Is.True, $"Failed for {testCase.Domain}");
-                Assert.That(result.ContactId, Is.Not.Null.And.Not.Empty, $"No contact ID for {testCase.Domain}");
+            Assert.That(result.Success, Is.True, $"Failed for {domain}");
+            Assert.That(result.ContactId, Is.Not.Null.And.Not.Empty, $"No contact ID for {domain}");
 
-                var testContactData = JObject.Parse(await TestHelpers.GetTestContact(result.ContactId, apiKey, baseUrl, CancellationToken.None));
+            contactId = result.ContactId;
+            var testContactData = JObject.Parse(await TestHelpers.GetTestContact(contactId, apiKey, baseUrl, CancellationToken.None));
 
-                Assert.That(testContactData["properties"]?["email"]?.ToString(), Is.EqualTo($"testcontact@{testCase.Domain}"));
-                Assert.That(testContactData["properties"]?["firstname"]?.ToString(), Is.EqualTo("Test"));
-                Assert.That(testContactData["properties"]?["lastname"]?.ToString(), Is.EqualTo("User"));
-
-                createdContactIds.Add(result.ContactId);
-            }
+            Assert.That(testContactData["properties"]?["email"]?.ToString(), Is.EqualTo($"testcontact@{domain}"));
+            Assert.That(testContactData["properties"]?["firstname"]?.ToString(), Is.EqualTo("Test"));
+            Assert.That(testContactData["properties"]?["lastname"]?.ToString(), Is.EqualTo("User"));
         }
         finally
         {
-            foreach (var id in createdContactIds)
+            if (contactId != null)
             {
                 try
                 {
-                    await TestHelpers.DeleteTestContact(id, apiKey, baseUrl, false, CancellationToken.None);
+                    await TestHelpers.DeleteTestContact(contactId, apiKey, baseUrl, true, CancellationToken.None);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Failed to clean up contact {id}: {ex.Message}");
+                    Console.WriteLine($"Failed to clean up contact {contactId}: {ex.Message}");
                 }
             }
         }
