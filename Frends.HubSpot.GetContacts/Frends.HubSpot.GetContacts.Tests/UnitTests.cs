@@ -13,6 +13,9 @@ using NUnit.Framework;
 
 namespace Frends.HubSpot.GetContacts.Tests;
 
+/// <summary>
+/// Test cases for HubSpot GetContacts task.
+/// </summary>
 [TestFixture]
 public class UnitTests
 {
