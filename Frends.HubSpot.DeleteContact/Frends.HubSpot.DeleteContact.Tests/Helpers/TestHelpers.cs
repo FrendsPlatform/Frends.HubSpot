@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 namespace Frends.HubSpot.DeleteContact.Tests.Helpers;
 
 /// <summary>
-/// Helper method for testing. Creates a contact.
+/// Helper methods for testing.
 /// </summary>
 internal static class TestHelpers
 {
