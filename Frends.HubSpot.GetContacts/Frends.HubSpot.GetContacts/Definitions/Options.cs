@@ -25,7 +25,7 @@ public class Options
     /// <summary>
     /// Overrides the error message on failure.
     /// </summary>
-    /// <example>Failed to delete contact.</example>
+    /// <example>Failed to retrieve contacts.</example>
     [DisplayFormat(DataFormatString = "Text")]
     public string ErrorMessageOnFailure { get; set; }
 }

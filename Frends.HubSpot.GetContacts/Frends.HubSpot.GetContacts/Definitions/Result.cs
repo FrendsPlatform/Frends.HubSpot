@@ -9,7 +9,7 @@ public class Result
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Result"/> class.
-    /// Result of getting HubSpot contacts.
+    /// Result of retrieving HubSpot contacts.
     /// </summary>
     /// <param name="success">True if the operation succeeded.</param>
     /// <param name="contacts">Array of contact objects.</param>

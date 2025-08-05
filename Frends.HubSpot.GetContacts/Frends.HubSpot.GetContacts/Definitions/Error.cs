@@ -10,7 +10,7 @@ public class Error
     /// <summary>
     /// Summary of the error.
     /// </summary>
-    /// <example>Unable to delete contact.</example>
+    /// <example>Unable to retrieve contacts.</example>
     public string Message { get; set; }
 
     /// <summary>
