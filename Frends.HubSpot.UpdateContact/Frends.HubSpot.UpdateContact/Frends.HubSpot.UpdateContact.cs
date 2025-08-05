@@ -1,27 +1,29 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Linq;
+using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
 using Frends.HubSpot.UpdateContact.Definitions;
+using Frends.HubSpot.UpdateContact.Helpers;
+using Newtonsoft.Json.Linq;
 
 namespace Frends.HubSpot.UpdateContact;
 
 /// <summary>
-/// Task class.
+/// Task class for updating a HubSpot contact.
 /// </summary>
 public static class HubSpot
 {
     /// <summary>
-    /// HubSpotes the input string the specified number of times.
+    /// Updates a contact in HubSpot.
     /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends-HubSpot-UpdateContact)
     /// </summary>
-    /// <param name="input">Essential parameters.</param>
+    /// <param name="input">Input parameters.</param>
     /// <param name="connection">Connection parameters.</param>
     /// <param name="options">Additional parameters.</param>
     /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
-    /// <returns>object { bool Success, string Output, object Error { string Message, dynamic AdditionalInfo } }</returns>
-    // TODO: Remove Connection parameter if the task does not make connections
-    public static Result UpdateContact(
+    /// <returns>Object { bool Success, Error Error { string Message, Exception AdditionalInfo } }</returns>
+    public static async Task<Result> UpdateContact(
         [PropertyTab] Input input,
         [PropertyTab] Connection connection,
         [PropertyTab] Options options,
@@ -29,49 +31,67 @@ public static class HubSpot
     {
         try
         {
-            // TODO: Do something with connection parameters, e.g., connect to a service.
-            _ = connection.ConnectionString;
+            if (string.IsNullOrWhiteSpace(connection.ApiKey))
+                throw new Exception("API Key is required");
 
-            // Cancellation token should be provided to methods that support it
-            // and checked during long-running operations, e.g., loops
-            cancellationToken.ThrowIfCancellationRequested();
+            if (string.IsNullOrWhiteSpace(connection.BaseUrl))
+                throw new Exception("Base URL is required");
 
-            var output = string.Join(options.Delimiter, Enumerable.Repeat(input.Content, input.Repeat));
+            if (string.IsNullOrWhiteSpace(input.ContactId))
+                throw new Exception("ContactId is required");
 
-            return new Result
+            if (!long.TryParse(input.ContactId, out _))
+                throw new Exception($"Contact ID should be a numeric value: '{input.ContactId}'.");
+
+            JObject contactProperties;
+
+            try
             {
-                Success = true,
-                Output = output,
-                Error = null,
-            };
-        }
-        catch (Exception e) when (e is not OperationCanceledException)
-        {
-            if (options.ThrowErrorOnFailure)
+                contactProperties = JObject.Parse(input.UpdateData);
+            }
+            catch (Newtonsoft.Json.JsonReaderException ex)
             {
-                if (string.IsNullOrEmpty(options.ErrorMessageOnFailure))
-                    throw new Exception(e.Message, e);
-
-                throw new Exception(options.ErrorMessageOnFailure, e);
+                throw new Exception("Invalid JSON format in ContactData", ex);
             }
 
-            var errorMessage = !string.IsNullOrEmpty(options.ErrorMessageOnFailure)
-                ? $"{options.ErrorMessageOnFailure}: {e.Message}"
-                : e.Message;
-
-            return new Result
+            if (options.CheckIfExists && !await UpdateHelpers.ContactExists(input.ContactId, connection.ApiKey, connection.BaseUrl, cancellationToken))
             {
-                Success = false,
-                Output = null,
-                Error = new Error
-                {
-                    Message = errorMessage,
-                    AdditionalInfo = new
-                    {
-                        Exception = e,
-                    },
-                },
+                throw new Exception($"Contact with ID {input.ContactId} does not exist");
+            }
+
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {connection.ApiKey}");
+
+            var payload = new JObject
+            {
+                ["properties"] = contactProperties,
             };
+
+            var content = new StringContent(payload.ToString(), System.Text.Encoding.UTF8, "application/json");
+
+            var response = await client.PatchAsync($"{connection.BaseUrl.TrimEnd('/')}/crm/v3/objects/contacts/{input.ContactId}", content, cancellationToken);
+
+            var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                try
+                {
+                    var responseJson = JObject.Parse(responseContent);
+                    var error = responseJson["message"]?.ToString() ?? "Unknown error";
+                    throw new Exception($"HubSpot API error: {response.StatusCode} - {error}");
+                }
+                catch
+                {
+                    throw new Exception($"HubSpot API error: {response.StatusCode} - {responseContent}");
+                }
+            }
+
+            return new Result(true);
+        }
+        catch (Exception ex)
+        {
+            return ErrorHandler.Handle(ex, options.ThrowErrorOnFailure, options.ErrorMessageOnFailure);
         }
     }
 }
