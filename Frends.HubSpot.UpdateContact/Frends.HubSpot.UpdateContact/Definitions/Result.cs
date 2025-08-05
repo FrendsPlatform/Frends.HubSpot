@@ -6,16 +6,22 @@
 public class Result
 {
     /// <summary>
-    /// Indicates if the task completed successfully.
+    /// Initializes a new instance of the <see cref="Result"/> class.
+    /// Result of updating a HubSpot contact.
+    /// </summary>
+    /// <param name="success">True if the operation succeeded.</param>
+    /// <param name="error">Error details if the operation failed.</param>
+    internal Result(bool success, Error error = null)
+    {
+        Success = success;
+        Error = error;
+    }
+
+    /// <summary>
+    /// Indicates whether contact creation was successful.
     /// </summary>
     /// <example>true</example>
     public bool Success { get; set; }
-
-    /// <summary>
-    /// Input string repeated the specified number of times.
-    /// </summary>
-    /// <example>foobar,foobar</example>
-    public string Output { get; set; }
 
     /// <summary>
     /// Error that occurred during task execution.

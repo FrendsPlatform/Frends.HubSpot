@@ -1,25 +1,23 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Frends.HubSpot.UpdateContact.Definitions;
 
 /// <summary>
-/// Essential parameters.
+/// Input parameters for updating a HubSpot contact.
 /// </summary>
 public class Input
 {
     /// <summary>
-    /// The input string to be repeated and output.
+    /// The unique id of the contact.
     /// </summary>
-    /// <example>foobar</example>
+    /// <example>1234567890</example>
     [DisplayFormat(DataFormatString = "Text")]
-    [DefaultValue("Lorem ipsum dolor sit amet.")]
-    public string Content { get; set; }
+    public string ContactId { get; set; }
 
     /// <summary>
-    /// Number of times to repeat the input string.
+    /// Properties to update as a Json string.
     /// </summary>
-    /// <example>2</example>
-    [DefaultValue(3)]
-    public int Repeat { get; set; }
+    /// <example>{ "lastname": "Doe" }</example>
+    [DisplayFormat(DataFormatString = "Json")]
+    public string UpdateData { get; set; }
 }
