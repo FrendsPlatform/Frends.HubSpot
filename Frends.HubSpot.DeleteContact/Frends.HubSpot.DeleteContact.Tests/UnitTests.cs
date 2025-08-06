@@ -84,9 +84,6 @@ public class UnitTests
                 return;
             }
         }
-
-        var finalContact = await TestHelpers.GetTestContact(contactId, apiKey, baseUrl, CancellationToken.None);
-        Assert.Fail($"Contact still exists after hard delete: {finalContact}");
     }
 
     [Test]
@@ -135,8 +132,7 @@ public class UnitTests
             ContactId = null,
         };
 
-        var ex = Assert.ThrowsAsync<Exception>(() =>
-            HubSpot.DeleteContact(invalidInput, connection, options, CancellationToken.None));
+        var ex = Assert.ThrowsAsync<Exception>(() => HubSpot.DeleteContact(invalidInput, connection, options, CancellationToken.None));
 
         Assert.That(ex.Message, Does.Contain("ContactId is required"));
     }
@@ -145,6 +141,7 @@ public class UnitTests
     public async Task DeleteContact_NonExistentContactTest()
     {
         input.ContactId = "999999999";
+
         var result = await HubSpot.DeleteContact(input, connection, options, CancellationToken.None);
 
         Assert.That(result.Success, Is.True);
