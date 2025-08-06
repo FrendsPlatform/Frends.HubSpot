@@ -52,6 +52,13 @@ public static class HubSpot
 
             if (options.HardDelete)
             {
+                var contactExists = await DeleteHelpers.ContactExists(input.ContactId, connection.ApiKey, connection.BaseUrl, cancellationToken);
+
+                if (!contactExists)
+                {
+                    return new Result(true);
+                }
+
                 var endpoint = $"{connection.BaseUrl.TrimEnd('/')}/crm/v3/objects/contacts/gdpr-delete";
                 var requestBody = new
                 {
@@ -66,7 +73,7 @@ public static class HubSpot
 
                 response = await client.PostAsync(endpoint, content, cancellationToken);
 
-                if (!response.IsSuccessStatusCode)
+                if (!response.IsSuccessStatusCode && response.StatusCode != System.Net.HttpStatusCode.NoContent)
                 {
                     var contactEmail = await DeleteHelpers.GetContactEmail(client, connection.BaseUrl, input.ContactId, cancellationToken);
 
@@ -85,10 +92,20 @@ public static class HubSpot
 
                         response = await client.PostAsync(endpoint, content, cancellationToken);
                     }
-                    else
+
+                    if (response.IsSuccessStatusCode || response.StatusCode == System.Net.HttpStatusCode.NoContent)
                     {
-                        return new Result(true);
+                        await Task.Delay(1000, cancellationToken);
+
+                        contactExists = await DeleteHelpers.ContactExists(input.ContactId, connection.ApiKey, connection.BaseUrl, cancellationToken);
+                        if (!contactExists)
+                        {
+                            return new Result(true);
+                        }
                     }
+
+                    var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                    throw new Exception($"Failed to delete contact. HubSpot API error: {response.StatusCode} - {responseContent}");
                 }
             }
             else
