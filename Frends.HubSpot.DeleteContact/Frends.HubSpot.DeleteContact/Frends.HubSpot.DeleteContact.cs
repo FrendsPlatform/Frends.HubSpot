@@ -98,6 +98,7 @@ public static class HubSpot
                         await Task.Delay(1000, cancellationToken);
 
                         contactExists = await DeleteHelpers.ContactExists(input.ContactId, connection.ApiKey, connection.BaseUrl, cancellationToken);
+
                         if (!contactExists)
                         {
                             return new Result(true);
@@ -105,34 +106,34 @@ public static class HubSpot
                     }
 
                     var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
-                    throw new Exception($"Failed to delete contact. HubSpot API error: {response.StatusCode} - {responseContent}");
+
+                    return ErrorHandler.Handle(new Exception($"Failed to delete contact. HubSpot API error: {response.StatusCode} - {responseContent}"), options.ThrowErrorOnFailure, options.ErrorMessageOnFailure);
                 }
             }
             else
             {
                 var endpoint = $"{connection.BaseUrl.TrimEnd('/')}/crm/v3/objects/contacts/{input.ContactId}";
                 response = await client.DeleteAsync(endpoint, cancellationToken);
-            }
 
-            if (!response.IsSuccessStatusCode)
-            {
-                var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
-
-                try
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
-                    var responseJson = JObject.Parse(responseContent);
-                    var error = responseJson["message"]?.ToString() ?? responseContent;
-
-                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-                    {
-                        return new Result(true);
-                    }
-
-                    throw new Exception($"HubSpot API error: {response.StatusCode} - {error}");
+                    return new Result(true);
                 }
-                catch (JsonReaderException)
+
+                if (!response.IsSuccessStatusCode)
                 {
-                    throw new Exception($"HubSpot API error: {response.StatusCode} - {responseContent}");
+                    var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+
+                    try
+                    {
+                        var responseJson = JObject.Parse(responseContent);
+                        var error = responseJson["message"]?.ToString() ?? responseContent;
+                        return ErrorHandler.Handle(new Exception($"HubSpot API error: {response.StatusCode} - {error}"), options.ThrowErrorOnFailure, options.ErrorMessageOnFailure);
+                    }
+                    catch (JsonReaderException)
+                    {
+                        return ErrorHandler.Handle(new Exception($"HubSpot API error: {response.StatusCode} - {responseContent}"), options.ThrowErrorOnFailure, options.ErrorMessageOnFailure);
+                    }
                 }
             }
 
