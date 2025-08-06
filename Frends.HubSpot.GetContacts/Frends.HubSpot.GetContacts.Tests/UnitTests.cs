@@ -107,11 +107,10 @@ public class UnitTests
         await CreateTestContacts(1);
         var (expectedId, expectedEmail) = testContacts[0];
 
-        var maxAttempts = 5;
-        var attempt = 0;
+        var maxRetries = 5;
         Result result = null;
 
-        while (attempt < maxAttempts)
+        for (var i = 0; i < maxRetries; i++)
         {
             input.FilterQuery = $"email eq '{expectedEmail}'";
             input.Limit = 1;
@@ -121,13 +120,12 @@ public class UnitTests
             if (result.Contacts.Count() == 1)
                 break;
 
-            attempt++;
-            await Task.Delay(2000 * attempt);
+            await Task.Delay(2000 * i);
         }
 
         Assert.That(result.Success, Is.True);
         Assert.That(result.Contacts, Is.Not.Null);
-        Assert.That(result.Contacts.Count(), Is.EqualTo(1), $"Failed to find contact after {maxAttempts} attempts");
+        Assert.That(result.Contacts.Count(), Is.EqualTo(1), $"Failed to find contact after {maxRetries} attempts");
 
         var resultId = result.Contacts.First()["id"]?.ToString();
         var resultEmail = result.Contacts.First()["properties"]?["email"]?.ToString();
