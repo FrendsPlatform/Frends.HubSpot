@@ -1,0 +1,21 @@
+name: DeleteContact_build_test
+
+on:
+  push:
+    branches-ignore:
+      - main
+    paths:
+      - 'Frends.HubSpot.DeleteContact/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: FrendsPlatform/FrendsTasks/.github/workflows/linux_build_test.yml@main
+    with:
+      workdir: Frends.HubSpot.DeleteContact
+      dotnet_version: 8.0.x
+      env_var_name_1: FRENDS_HubSpot_privateAccessToken
+    secrets:
+      badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
+      test_feed_api_key: ${{ secrets.TASKS_TEST_FEED_API_KEY }}
+      env_var_value_1: ${{ secrets.HUBSPOT_PRIVATE_ACCESS_TOKEN }}
