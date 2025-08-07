@@ -40,6 +40,9 @@ public static class HubSpot
             if (string.IsNullOrWhiteSpace(input.ContactId))
                 throw new Exception("ContactId is required");
 
+            if (string.IsNullOrWhiteSpace(input.UpdateData))
+                throw new Exception("UpdateData is required");
+
             if (!long.TryParse(input.ContactId, out _))
                 throw new Exception($"Contact ID should be a numeric value: '{input.ContactId}'.");
 
@@ -75,16 +78,20 @@ public static class HubSpot
 
             if (!response.IsSuccessStatusCode)
             {
+                var message = $"HubSpot API error: {response.StatusCode}";
+
                 try
                 {
                     var responseJson = JObject.Parse(responseContent);
-                    var error = responseJson["message"]?.ToString() ?? "Unknown error";
-                    throw new Exception($"HubSpot API error: {response.StatusCode} - {error}");
+                    var errorDetail = responseJson["message"]?.ToString();
+                    message += errorDetail != null ? $" - {errorDetail}" : $" - {responseContent}";
                 }
                 catch
                 {
-                    throw new Exception($"HubSpot API error: {response.StatusCode} - {responseContent}");
+                    message += $" - {responseContent}";
                 }
+
+                return ErrorHandler.Handle(new Exception(message), options.ThrowErrorOnFailure, options.ErrorMessageOnFailure);
             }
 
             return new Result(true);
