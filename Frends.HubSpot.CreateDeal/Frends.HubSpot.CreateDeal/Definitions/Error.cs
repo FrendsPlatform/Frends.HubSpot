@@ -1,3 +1,5 @@
+using System;
+
 namespace Frends.HubSpot.CreateDeal.Definitions;
 
 /// <summary>
@@ -8,13 +10,12 @@ public class Error
     /// <summary>
     /// Summary of the error.
     /// </summary>
-    /// <example>Unable to join strings.</example>
+    /// <example>Unable to create deal.</example>
     public string Message { get; set; }
 
     /// <summary>
     /// Additional information about the error.
     /// </summary>
     /// <example>object { Exception Exception }</example>
-    // TODO: Add task specific additional information. Strong typing is recommended when reasonable.
-    public dynamic AdditionalInfo { get; set; }
+    public Exception AdditionalInfo { get; set; }
 }

@@ -6,16 +6,30 @@
 public class Result
 {
     /// <summary>
-    /// Indicates if the task completed successfully.
+    /// Initializes a new instance of the <see cref="Result"/> class.
+    /// Result of creating a HubSpot deal.
+    /// </summary>
+    /// <param name="success">True if the operation succeeded.</param>
+    /// <param name="id">Unique Id of the created deal.</param>
+    /// <param name="error">Error details if the operation failed.</param>
+    internal Result(bool success, string id, Error error = null)
+    {
+        Success = success;
+        Id = id;
+        Error = error;
+    }
+
+    /// <summary>
+    /// Indicates whether deal creation was successful.
     /// </summary>
     /// <example>true</example>
     public bool Success { get; set; }
 
     /// <summary>
-    /// Input string repeated the specified number of times.
+    /// Unique Id of the created deal.
     /// </summary>
-    /// <example>foobar,foobar</example>
-    public string Output { get; set; }
+    /// <example>123456789</example>
+    public string Id { get; set; }
 
     /// <summary>
     /// Error that occurred during task execution.

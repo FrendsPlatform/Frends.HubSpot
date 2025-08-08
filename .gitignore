@@ -408,3 +408,4 @@ FodyWeavers.xsd
 /Frends.HubSpot.DeleteContact/Frends.HubSpot.DeleteContact.Tests/.env
 /Frends.HubSpot.GetContacts/Frends.HubSpot.GetContacts.Tests/.env
 /Frends.HubSpot.UpdateContact/Frends.HubSpot.UpdateContact.Tests/.env
+/Frends.HubSpot.CreateDeal/Frends.HubSpot.CreateDeal.Tests/.env

@@ -1,25 +1,16 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Frends.HubSpot.CreateDeal.Definitions;
 
 /// <summary>
-/// Essential parameters.
+/// Input parameters for creating a HubSpot deal.
 /// </summary>
 public class Input
 {
     /// <summary>
-    /// The input string to be repeated and output.
+    /// Deal properties such as amount, dealname, dealstage, pipeline.
     /// </summary>
-    /// <example>foobar</example>
-    [DisplayFormat(DataFormatString = "Text")]
-    [DefaultValue("Lorem ipsum dolor sit amet.")]
-    public string Content { get; set; }
-
-    /// <summary>
-    /// Number of times to repeat the input string.
-    /// </summary>
-    /// <example>2</example>
-    [DefaultValue(3)]
-    public int Repeat { get; set; }
+    /// <example>{ "amount": "5000", "dealname": "Enterprise Deal", "dealstage": "presentation scheduled", "pipeline": "default" }</example>
+    [DisplayFormat(DataFormatString = "Json")]
+    public string DealData { get; set; }
 }

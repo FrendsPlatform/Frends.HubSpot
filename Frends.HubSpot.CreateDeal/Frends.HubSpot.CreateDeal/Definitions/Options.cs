@@ -9,25 +9,23 @@ namespace Frends.HubSpot.CreateDeal.Definitions;
 public class Options
 {
     /// <summary>
-    /// Delimiter to use between the repeated strings.
+    /// Optional. Contact Id to associate the deal with.
     /// </summary>
-    /// <example>,</example>
-    [DisplayFormat(DataFormatString = "Text")]
-    [DefaultValue(" ")]
-    public string Delimiter { get; set; }
+    /// <example>1234567890</example>
+    [DisplayFormat(DataFormatString = "text")]
+    public string AssociateWithContactData { get; set; }
 
     /// <summary>
-    /// Whether to throw an error on failure.
+    /// Whether to throw an error on failure. True by default.
     /// </summary>
     /// <example>false</example>
     [DefaultValue(true)]
-    public bool ThrowErrorOnFailure { get; set; }
+    public bool ThrowErrorOnFailure { get; set; } = true;
 
     /// <summary>
     /// Overrides the error message on failure.
     /// </summary>
-    /// <example>Custom error message</example>
+    /// <example>Failed to create deal.</example>
     [DisplayFormat(DataFormatString = "Text")]
-    [DefaultValue("")]
     public string ErrorMessageOnFailure { get; set; }
 }
