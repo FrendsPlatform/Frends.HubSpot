@@ -19,7 +19,7 @@ internal static class TestHelpers
     /// <param name="apiKey">HubSpot Private App access token.</param>
     /// <param name="baseUrl">Base URL for the API.</param>
     /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
-    /// <returns>Contact Id used for testing delete functionality.</returns>
+    /// <returns>Contact Id used for testing contact retrieval functionality.</returns>
     public static async Task<string> CreateTestContact(string apiKey, string baseUrl, CancellationToken cancellationToken)
     {
         var timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
