@@ -41,7 +41,7 @@ public class UnitTests
             UpdateData = @"{
                 ""email"": ""updated@example.com"",
                 ""firstname"": ""Updated"",
-                ""lastname"": ""User"",
+                ""lastname"": ""User""
             }",
         };
 
