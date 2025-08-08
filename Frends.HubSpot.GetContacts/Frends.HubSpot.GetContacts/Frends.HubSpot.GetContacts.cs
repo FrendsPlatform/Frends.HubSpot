@@ -108,7 +108,7 @@ public static class HubSpot
                     ?? responseJson["errors"]?.First?["message"]?.ToString()
                     ?? "Unknown error";
 
-                throw new Exception($"HubSpot API error: {response.StatusCode} - {error}");
+                return ErrorHandler.Handle(new Exception($"HubSpot API error: {response.StatusCode} - {error}"), options.ThrowErrorOnFailure, options.ErrorMessageOnFailure);
             }
 
             return new Result(true, responseJson["results"], !string.IsNullOrEmpty(responseJson["paging"]?["next"]?["after"]?.ToString()), responseJson["paging"]?["next"]?["after"]?.ToString(), null);

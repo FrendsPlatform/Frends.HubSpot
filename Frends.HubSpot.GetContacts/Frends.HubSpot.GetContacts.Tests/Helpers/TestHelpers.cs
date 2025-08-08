@@ -67,6 +67,11 @@ internal static class TestHelpers
 
         if (hardDelete)
         {
+            var contactExists = await ContactExists(contactId, apiKey, baseUrl, cancellationToken);
+
+            if (!contactExists)
+                return;
+
             var endpoint = $"{baseUrl.TrimEnd('/')}/crm/v3/objects/contacts/gdpr-delete";
             var requestBody = new
             {
@@ -74,14 +79,11 @@ internal static class TestHelpers
                 objectId = contactId,
             };
 
-            var content = new StringContent(
-                JsonConvert.SerializeObject(requestBody),
-                Encoding.UTF8,
-                "application/json");
+            var content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json");
 
             response = await client.PostAsync(endpoint, content, cancellationToken);
 
-            if (!response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode && response.StatusCode != System.Net.HttpStatusCode.NoContent)
             {
                 var contactEmail = await GetContactEmail(client, baseUrl, contactId, cancellationToken);
 
@@ -93,23 +95,37 @@ internal static class TestHelpers
                         objectId = contactEmail,
                     };
 
-                    content = new StringContent(
-                        JsonConvert.SerializeObject(requestBody),
-                        Encoding.UTF8,
-                        "application/json");
+                    content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json");
 
                     response = await client.PostAsync(endpoint, content, cancellationToken);
                 }
-                else
+
+                if (response.IsSuccessStatusCode || response.StatusCode == System.Net.HttpStatusCode.NoContent)
                 {
-                    return;
+                    await Task.Delay(1000, cancellationToken);
+                    contactExists = await ContactExists(contactId, apiKey, baseUrl, cancellationToken);
+
+                    if (!contactExists)
+                        return;
                 }
+
+                var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                throw new Exception($"Failed to delete contact. HubSpot API error: {response.StatusCode} - {responseContent}");
             }
         }
         else
         {
             var endpoint = $"{baseUrl.TrimEnd('/')}/crm/v3/objects/contacts/{contactId}";
             response = await client.DeleteAsync(endpoint, cancellationToken);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return;
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                throw new Exception($"HubSpot API error: {response.StatusCode} - {responseContent}");
+            }
         }
     }
 
@@ -152,5 +168,33 @@ internal static class TestHelpers
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Checks for contact's existence in HubSpot.
+    /// </summary>
+    /// <param name="contactId">The unique Id of the contact to retrieve.</param>
+    /// <param name="apiKey">HubSpot Private App access token.</param>
+    /// <param name="baseUrl">Base Url for HubSpot Api.</param>
+    /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
+    /// <returns>Boolean value, true if contact exists, false if not.</returns>
+    private static async Task<bool> ContactExists(string contactId, string apiKey, string baseUrl, CancellationToken cancellationToken)
+    {
+        using var client = new HttpClient();
+        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+
+        var endpoint = $"{baseUrl.TrimEnd('/')}/crm/v3/objects/contacts/{contactId}?properties=id";
+        var response = await client.GetAsync(endpoint, cancellationToken);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            return false;
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new HttpRequestException($"HubSpot API error: {response.StatusCode} - {errorContent}");
+        }
+
+        return true;
     }
 }

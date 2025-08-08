@@ -12,22 +12,32 @@ public static class FilterParser
     /// <summary>
     /// Parses a filter query string into property name, operator and value
     /// </summary>
-    /// <param name="filterQuery">The filter query string (e.g., "email eq 'test@example.com'")</param>
+    /// <param name="filterQuery">The filter query string</param>
     /// <returns>Tuple containing property name, operator and value</returns>
     public static (string PropertyName, string Operator, string Value) ParseFilterQuery(string filterQuery)
     {
         var parts = filterQuery.Split([' '], StringSplitOptions.RemoveEmptyEntries);
 
         if (parts.Length < 3)
-            throw new Exception("Invalid filter format. Use: 'property eq \"value\"'");
+            throw new Exception("Invalid filter format. Use: 'property operator \"value\"'");
 
         var operatorMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["eq"] = "EQ",
             ["ne"] = "NEQ",
+            ["neq"] = "NEQ",
             ["gt"] = "GT",
             ["lt"] = "LT",
+            ["gte"] = "GTE",
+            ["lte"] = "LTE",
+            ["between"] = "BETWEEN",
+            ["in"] = "IN",
+            ["not_in"] = "NOT_IN",
+            ["has_property"] = "HAS_PROPERTY",
+            ["not_has_property"] = "NOT_HAS_PROPERTY",
             ["contains"] = "CONTAINS_TOKEN",
+            ["contains_token"] = "CONTAINS_TOKEN",
+            ["not_contains_token"] = "NOT_CONTAINS_TOKEN",
         };
 
         if (!operatorMap.TryGetValue(parts[1].ToLower(), out var op))
