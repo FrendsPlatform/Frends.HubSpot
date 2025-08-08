@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -82,19 +84,19 @@ public static class HubSpot
             else
             {
                 url = $"{connection.BaseUrl.TrimEnd('/')}/crm/v3/objects/contacts";
-                var queryParams = System.Web.HttpUtility.ParseQueryString(string.Empty);
+                var queryParams = new Dictionary<string, string>();
 
                 if (input.Properties != null && input.Properties.Length > 0)
-                    queryParams.Add("properties", string.Join(",", input.Properties));
+                    queryParams["properties"] = string.Join(",", input.Properties);
 
                 if (input.Limit > 0)
-                    queryParams.Add("limit", input.Limit.ToString());
+                    queryParams["limit"] = input.Limit.ToString();
 
                 if (!string.IsNullOrWhiteSpace(input.After))
-                    queryParams.Add("after", input.After);
+                    queryParams["after"] = input.After;
 
                 if (queryParams.Count > 0)
-                    url += "?" + queryParams.ToString();
+                    url += "?" + string.Join("&", queryParams.Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"));
 
                 response = await client.GetAsync(url, cancellationToken);
             }
