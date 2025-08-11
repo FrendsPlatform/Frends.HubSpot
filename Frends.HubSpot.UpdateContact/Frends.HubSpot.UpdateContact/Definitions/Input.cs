@@ -8,7 +8,7 @@ namespace Frends.HubSpot.UpdateContact.Definitions;
 public class Input
 {
     /// <summary>
-    /// The unique id of the contact.
+    /// The unique Id of the contact.
     /// </summary>
     /// <example>1234567890</example>
     [DisplayFormat(DataFormatString = "Text")]

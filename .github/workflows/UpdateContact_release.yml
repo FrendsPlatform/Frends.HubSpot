@@ -10,4 +10,4 @@ jobs:
       workdir: Frends.HubSpot.UpdateContact
       dotnet_version: 8.0.x
     secrets:
-      badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
+      badge_service_api_key: ${{ secrets.TASKS_FEED_API_KEY }}
