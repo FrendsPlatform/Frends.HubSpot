@@ -2,6 +2,6 @@
 
 ## [1.0.0] - 2025-07-25
 
-### Added
+### Changed
 
 - Initial implementation

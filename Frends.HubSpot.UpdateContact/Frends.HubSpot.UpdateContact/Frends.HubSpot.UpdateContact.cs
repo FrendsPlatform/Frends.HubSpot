@@ -59,7 +59,7 @@ public static class HubSpot
 
             if (options.CheckIfExists && !await UpdateHelpers.ContactExists(input.ContactId, connection.ApiKey, connection.BaseUrl, cancellationToken))
             {
-                throw new Exception($"Contact with ID {input.ContactId} does not exist");
+                return ErrorHandler.Handle(new Exception($"Contact with ID {input.ContactId} does not exist"), options.ThrowErrorOnFailure, options.ErrorMessageOnFailure);
             }
 
             using var client = new HttpClient();

@@ -9,7 +9,7 @@ namespace Frends.HubSpot.UpdateContact.Definitions;
 public class Options
 {
     /// <summary>
-    /// Optional. Check contacct existence before updating. Default is false.
+    /// Optional. Check contact existence before updating. Default is false.
     /// </summary>
     /// <example>true</example>
     [DefaultValue(false)]
