@@ -9,5 +9,7 @@ jobs:
     with:
       workdir: Frends.HubSpot.DeleteContact
       dotnet_version: 8.0.x
+      env_var_name_1: FRENDS_HubSpot_privateAccessToken
     secrets:
       feed_api_key: ${{ secrets.TASKS_FEED_API_KEY }}
+      env_var_value_1: ${{ secrets.HUBSPOT_PRIVATE_ACCESS_TOKEN }}
