@@ -16,7 +16,7 @@ public static class HubSpot
 {
     /// <summary>
     /// Creates a deal in HubSpot.
-    /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends-HubSpot-CreateContact)
+    /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends-HubSpot-CreateDeal)
     /// </summary>
     /// <param name="input">Input parameters.</param>
     /// <param name="connection">Connection parameters.</param>
