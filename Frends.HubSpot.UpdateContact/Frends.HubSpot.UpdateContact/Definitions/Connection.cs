@@ -17,7 +17,7 @@ public class Connection
     public string ApiKey { get; set; }
 
     /// <summary>
-    /// Base URL for the API.
+    /// Base Url for the Api.
     /// </summary>
     /// <example>https://api.hubapi.com.</example>
     [DisplayFormat(DataFormatString = "Text")]
