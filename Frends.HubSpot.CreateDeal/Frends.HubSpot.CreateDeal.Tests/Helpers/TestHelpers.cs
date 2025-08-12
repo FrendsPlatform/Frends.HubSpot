@@ -13,7 +13,7 @@ internal static class TestHelpers
     /// <summary>
     /// Deletes a test deal from HubSpot.
     /// </summary>
-    /// <param name="dealId">The unique Id of the deal to delete.</param>
+    /// <param name="dealId">The unique dealId of the deal to delete.</param>
     /// <param name="apiKey">HubSpot Private App access token.</param>
     /// <param name="baseUrl">Base Url for HubSpot Api.</param>
     /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
@@ -38,7 +38,7 @@ internal static class TestHelpers
     /// <summary>
     /// Retrieves a deal from HubSpot.
     /// </summary>
-    /// <param name="dealId">The unique Id of the deal to retrieve.</param>
+    /// <param name="dealId">The unique dealId of the deal to retrieve.</param>
     /// <param name="apiKey">HubSpot Private App access token.</param>
     /// <param name="baseUrl">Base Url for HubSpot Api.</param>
     /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
