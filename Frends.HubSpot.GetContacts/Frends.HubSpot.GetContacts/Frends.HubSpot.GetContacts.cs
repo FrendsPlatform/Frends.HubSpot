@@ -19,7 +19,7 @@ public static class HubSpot
 {
     /// <summary>
     /// Retrieves contacts from HubSpot.
-    /// [Documentation](https://developers.hubspot.com/docs/api/crm/contacts)
+    /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends-HubSpot-GetContacts)
     /// </summary>
     /// <param name="input">Input parameters.</param>
     /// <param name="connection">Connection parameters.</param>
