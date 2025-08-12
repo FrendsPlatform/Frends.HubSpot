@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using dotenv.net;
@@ -75,6 +76,42 @@ public class UnitTests
         Assert.That(testDealData["id"]?.ToString(), Is.EqualTo(dealId));
         Assert.That(testDealData["properties"]?["amount"]?.ToString(), Is.EqualTo("5000"));
         Assert.That(testDealData["properties"]?["dealname"]?.ToString(), Is.EqualTo("Test Deal"));
+    }
+
+    [Test]
+    public async Task CreateDeal_WithContactAssociation_SuccessTest()
+    {
+        var contactId = await TestHelpers.CreateTestContact(apiKey, baseUrl, CancellationToken.None);
+        Assert.That(contactId, Is.Not.Null.And.Not.Empty);
+
+        try
+        {
+            options.AssociateWithContactData = contactId;
+
+            var result = await HubSpot.CreateDeal(input, connection, options, CancellationToken.None);
+
+            Assert.That(result.Success, Is.True);
+            Assert.That(result.Id, Is.Not.Null.And.Not.Empty);
+            dealId = result.Id;
+
+            var dealResponse = await TestHelpers.GetTestDeal(dealId, apiKey, baseUrl, CancellationToken.None);
+            var dealData = JObject.Parse(dealResponse);
+
+            var associatedContacts = dealData["associations"]?["contacts"]?["results"];
+            bool foundAssociation = false;
+
+            if (associatedContacts != null)
+            {
+                foundAssociation = associatedContacts
+                    .Any(c => c["id"]?.ToString() == contactId);
+            }
+
+            Assert.That(foundAssociation, Is.True, $"Deal {dealId} should be associated with contact {contactId}");
+        }
+        finally
+        {
+            await TestHelpers.DeleteTestContact(contactId, apiKey, baseUrl, true, CancellationToken.None);
+        }
     }
 
     [Test]

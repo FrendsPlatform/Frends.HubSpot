@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 
 namespace Frends.HubSpot.CreateDeal.Helpers;
 
@@ -22,31 +23,24 @@ public static class AssociateDeal
     /// <returns>A task that represents the asynchronous operation.</returns>
     public static async Task AssociateDealWithContact(HttpClient client, string baseUrl, string dealId, string contactId, CancellationToken cancellationToken)
     {
-        var associationPayload = new JObject
+        try
         {
-            ["types"] = new JArray
+            var response = await client.PutAsync(
+                $"{baseUrl.TrimEnd('/')}/crm/v3/objects/deals/{dealId}/associations/contacts/{contactId}/3",
+                new StringContent("{}", Encoding.UTF8, "application/json"),
+                cancellationToken);
+
+            if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NoContent)
             {
-                new JObject
-                {
-                    ["associationCategory"] = "HUBSPOT_DEFINED",
-                    ["associationTypeId"] = 3,
-                },
-            },
-        };
+                return;
+            }
 
-        var content = new StringContent(associationPayload.ToString(), System.Text.Encoding.UTF8, "application/json");
-
-        var response = await client.PutAsync(
-            $"{baseUrl.TrimEnd('/')}/crm/v3/objects/deals/{dealId}/associations/contacts/{contactId}",
-            content,
-            cancellationToken);
-
-        if (!response.IsSuccessStatusCode)
-        {
             var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
-            var responseJson = JObject.Parse(responseContent);
-            var error = responseJson["message"]?.ToString() ?? "Unknown error";
-            throw new Exception($"Failed to associate deal with contact: {response.StatusCode} - {error}");
+            throw new Exception($"Failed to associate deal with contact: {response.StatusCode} - {responseContent}");
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Association failed: {ex.Message}", ex);
         }
     }
 }
