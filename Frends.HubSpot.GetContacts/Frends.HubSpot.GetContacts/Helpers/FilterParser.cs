@@ -16,6 +16,9 @@ public static class FilterParser
     /// <returns>Tuple containing property name, operator and value</returns>
     public static (string PropertyName, string Operator, string Value) ParseFilterQuery(string filterQuery)
     {
+        if (string.IsNullOrWhiteSpace(filterQuery))
+            throw new ArgumentNullException(nameof(filterQuery), "Filter query cannot be null or whitespace.");
+
         var parts = filterQuery.Split([' '], StringSplitOptions.RemoveEmptyEntries);
 
         if (parts.Length < 3)
@@ -39,6 +42,9 @@ public static class FilterParser
             ["contains_token"] = "CONTAINS_TOKEN",
             ["not_contains_token"] = "NOT_CONTAINS_TOKEN",
         };
+
+        if (string.IsNullOrWhiteSpace(parts[1]))
+            throw new Exception("Operator cannot be null or whitespace.");
 
         if (!operatorMap.TryGetValue(parts[1].ToLower(), out var op))
             throw new Exception($"Unsupported operator: {parts[1]}");

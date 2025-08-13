@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using dotenv.net;
@@ -242,20 +243,75 @@ public class UnitTests
         Assert.That(result.Error.AdditionalInfo, Is.EqualTo(ex));
     }
 
+    [Test]
+    public async Task GetContacts_IncludeArchived_SuccessTest()
+    {
+        await CreateTestContacts(1);
+        var (expectedId, expectedEmail) = testContacts[0];
+
+        await TestHelpers.ArchiveTestContact(expectedId, apiKey, baseUrl, CancellationToken.None);
+
+        input.FilterQuery = null;
+        input.Limit = 20;
+        options.IncludeArchived = true;
+
+        var maxRetries = 5;
+        JToken foundContact = null;
+        Result archivedResult = null;
+
+        for (int i = 0; i < maxRetries; i++)
+        {
+            archivedResult = await HubSpot.GetContacts(input, connection, options, CancellationToken.None);
+            Assert.That(archivedResult.Success, Is.True);
+
+            foundContact = archivedResult.Contacts.FirstOrDefault(c => c["properties"]?["email"]?.ToString() == expectedEmail);
+
+            if (foundContact != null)
+                break;
+
+            await Task.Delay(2000 * i);
+        }
+
+        Assert.That(foundContact, Is.Not.Null, $"Archived contact {expectedEmail} not found after {maxRetries} attempts");
+        Assert.That(foundContact["id"]?.ToString(), Is.EqualTo(expectedId));
+        Assert.That(foundContact["properties"]?["email"]?.ToString(), Is.EqualTo(expectedEmail));
+    }
+
     private async Task CreateTestContacts(int count)
     {
         var client = new HttpClient();
-        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
         for (int i = 0; i < count; i++)
         {
-            var contactId = await TestHelpers.CreateTestContact(apiKey, baseUrl, CancellationToken.None);
-            var email = await TestHelpers.GetContactEmail(client, baseUrl, contactId, CancellationToken.None);
+            string contactId = null;
 
-            if (string.IsNullOrEmpty(email))
-                throw new Exception($"Failed to retrieve email for test contact ID: {contactId}");
+            try
+            {
+                contactId = await TestHelpers.CreateTestContact(apiKey, baseUrl, CancellationToken.None);
+                var contactEmail = await TestHelpers.GetContactEmail(client, baseUrl, contactId, CancellationToken.None);
 
-            testContacts.Add((contactId, email));
+                if (string.IsNullOrEmpty(contactEmail))
+                    throw new Exception($"Failed to retrieve email for test contact ID: {contactId}");
+
+                testContacts.Add((contactId, contactEmail));
+            }
+            catch
+            {
+                if (contactId != null)
+                {
+                    try
+                    {
+                        await TestHelpers.DeleteTestContact(contactId, apiKey, baseUrl, true, CancellationToken.None);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Failed to cleanup failed test contact {contactId}: {ex.Message}");
+                    }
+                }
+
+                throw;
+            }
         }
     }
 }

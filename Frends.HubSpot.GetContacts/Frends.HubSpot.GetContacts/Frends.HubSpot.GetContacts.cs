@@ -27,10 +27,10 @@ public static class HubSpot
     /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
     /// <returns>Object { bool Success, JToken Contacts, bool HasMore, string NextPageCursor, Error Error }</returns>
     public static async Task<Result> GetContacts(
-        [PropertyTab] Input input,
-        [PropertyTab] Connection connection,
-        [PropertyTab] Options options,
-        CancellationToken cancellationToken)
+    [PropertyTab] Input input,
+    [PropertyTab] Connection connection,
+    [PropertyTab] Options options,
+    CancellationToken cancellationToken)
     {
         try
         {
@@ -56,20 +56,20 @@ public static class HubSpot
                 var requestBody = new JObject
                 {
                     ["filterGroups"] = new JArray
+                {
+                    new JObject
                     {
-                        new JObject
+                        ["filters"] = new JArray
                         {
-                            ["filters"] = new JArray
+                            new JObject
                             {
-                                new JObject
-                                {
-                                    ["propertyName"] = propertyName,
-                                    ["operator"] = @operator,
-                                    ["value"] = value,
-                                },
+                                ["propertyName"] = propertyName,
+                                ["operator"] = @operator,
+                                ["value"] = value,
                             },
                         },
                     },
+                },
                     ["properties"] = input.Properties != null ? new JArray(input.Properties) : [],
                     ["limit"] = input.Limit,
                 };
@@ -84,7 +84,10 @@ public static class HubSpot
             else
             {
                 url = $"{connection.BaseUrl.TrimEnd('/')}/crm/v3/objects/contacts";
-                var queryParams = new Dictionary<string, string>();
+                var queryParams = new Dictionary<string, string>
+                {
+                    ["archived"] = options.IncludeArchived.ToString().ToLower(),
+                };
 
                 if (input.Properties != null && input.Properties.Length > 0)
                     queryParams["properties"] = string.Join(",", input.Properties);
@@ -94,6 +97,8 @@ public static class HubSpot
 
                 if (!string.IsNullOrWhiteSpace(input.After))
                     queryParams["after"] = input.After;
+
+                queryParams["archived"] = options.IncludeArchived.ToString().ToLower();
 
                 if (queryParams.Count > 0)
                     url += "?" + string.Join("&", queryParams.Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"));
