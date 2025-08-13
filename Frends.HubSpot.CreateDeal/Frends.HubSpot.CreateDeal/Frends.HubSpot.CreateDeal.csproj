@@ -11,7 +11,7 @@
         <PackageTags>Frends</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <Description>Frends task for creating deal in HubSpot.</Description>
+        <Description>Frends task for creating a deal in HubSpot.</Description>
         <PackageProjectUrl>https://frends.com/</PackageProjectUrl>
         <RepositoryUrl>https://github.com/FrendsPlatform/Frends.HubSpot/tree/main/Frends.HubSpot.CreateDeal</RepositoryUrl>
     </PropertyGroup>

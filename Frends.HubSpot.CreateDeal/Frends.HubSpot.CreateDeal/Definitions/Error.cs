@@ -10,7 +10,7 @@ public class Error
     /// <summary>
     /// Summary of the error.
     /// </summary>
-    /// <example>Unable to create deal.</example>
+    /// <example>Unable to create the deal.</example>
     public string Message { get; set; }
 
     /// <summary>

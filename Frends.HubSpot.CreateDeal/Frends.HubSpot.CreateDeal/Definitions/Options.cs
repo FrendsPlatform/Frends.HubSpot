@@ -25,7 +25,7 @@ public class Options
     /// <summary>
     /// Overrides the error message on failure.
     /// </summary>
-    /// <example>Failed to create deal.</example>
+    /// <example>Failed to create the deal.</example>
     [DisplayFormat(DataFormatString = "Text")]
     public string ErrorMessageOnFailure { get; set; }
 }
