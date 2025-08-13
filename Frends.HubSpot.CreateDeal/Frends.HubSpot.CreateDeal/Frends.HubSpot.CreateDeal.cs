@@ -69,14 +69,22 @@ public static class HubSpot
             if (!response.IsSuccessStatusCode)
             {
                 var error = responseJson["message"]?.ToString() ?? "Unknown error";
-                throw new Exception($"HubSpot API error: {response.StatusCode} - {error}");
+
+                return ErrorHandler.Handle(new Exception($"HubSpot API error: {response.StatusCode} - {error}"), options.ThrowErrorOnFailure, options.ErrorMessageOnFailure);
             }
 
             var dealId = responseJson["id"]?.ToString();
 
             if (!string.IsNullOrWhiteSpace(options.AssociateWithContactData))
             {
-                await AssociateDeal.AssociateDealWithContact(client, connection.BaseUrl, dealId, options.AssociateWithContactData, cancellationToken);
+                try
+                {
+                    await AssociateDeal.AssociateDealWithContact(client, connection.BaseUrl, dealId, options.AssociateWithContactData, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    return ErrorHandler.Handle(ex, options.ThrowErrorOnFailure, options.ErrorMessageOnFailure);
+                }
             }
 
             return new Result(true, dealId);

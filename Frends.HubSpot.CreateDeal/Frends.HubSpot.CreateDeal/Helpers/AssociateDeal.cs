@@ -23,24 +23,12 @@ public static class AssociateDeal
     /// <returns>A task that represents the asynchronous operation.</returns>
     public static async Task AssociateDealWithContact(HttpClient client, string baseUrl, string dealId, string contactId, CancellationToken cancellationToken)
     {
-        try
+        var response = await client.PutAsync($"{baseUrl.TrimEnd('/')}/crm/v3/objects/deals/{dealId}/associations/contacts/{contactId}/3", new StringContent("{}", Encoding.UTF8, "application/json"), cancellationToken);
+
+        if (!response.IsSuccessStatusCode && response.StatusCode != HttpStatusCode.NoContent)
         {
-            var response = await client.PutAsync(
-                $"{baseUrl.TrimEnd('/')}/crm/v3/objects/deals/{dealId}/associations/contacts/{contactId}/3",
-                new StringContent("{}", Encoding.UTF8, "application/json"),
-                cancellationToken);
-
-            if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NoContent)
-            {
-                return;
-            }
-
             var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
             throw new Exception($"Failed to associate deal with contact: {response.StatusCode} - {responseContent}");
-        }
-        catch (Exception ex)
-        {
-            throw new Exception($"Association failed: {ex.Message}", ex);
         }
     }
 }
