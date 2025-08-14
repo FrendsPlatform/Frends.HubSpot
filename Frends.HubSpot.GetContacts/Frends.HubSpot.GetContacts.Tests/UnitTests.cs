@@ -277,6 +277,71 @@ public class UnitTests
         Assert.That(foundContact["properties"]?["email"]?.ToString(), Is.EqualTo(expectedEmail));
     }
 
+    [Test]
+    public void ParseFilterQuery_ShouldParseSingleValueOperator()
+    {
+        const string filter = "age gt 25";
+
+        var result = FilterParser.ParseFilterQuery(filter);
+
+        Assert.That(result.PropertyName, Is.EqualTo("age"));
+        Assert.That(result.Operator, Is.EqualTo("GT"));
+        Assert.That(result.Value, Is.EqualTo("25"));
+        Assert.That(result.Values, Is.Null);
+        Assert.That(result.HighValue, Is.Null);
+    }
+
+    [Test]
+    public void ParseFilterQuery_ShouldParseInOperator()
+    {
+        const string filter = "status in active,pending";
+
+        var result = FilterParser.ParseFilterQuery(filter);
+
+        Assert.That(result.PropertyName, Is.EqualTo("status"));
+        Assert.That(result.Operator, Is.EqualTo("IN"));
+        Assert.That(result.Value, Is.Null);
+        Assert.That(result.Values, Is.EquivalentTo(new[] { "active", "pending" }));
+        Assert.That(result.HighValue, Is.Null);
+    }
+
+    [Test]
+    public void ParseFilterQuery_ShouldParseBetweenOperator()
+    {
+        const string filter = "price between 100,500";
+
+        var result = FilterParser.ParseFilterQuery(filter);
+
+        Assert.That(result.PropertyName, Is.EqualTo("price"));
+        Assert.That(result.Operator, Is.EqualTo("BETWEEN"));
+        Assert.That(result.Value, Is.EqualTo("100"));
+        Assert.That(result.HighValue, Is.EqualTo("500"));
+        Assert.That(result.Values, Is.Null);
+    }
+
+    [Test]
+    public void ParseFilterQuery_ShouldParseHasPropertyOperator()
+    {
+        const string filter = "email has_property";
+
+        var result = FilterParser.ParseFilterQuery(filter);
+
+        Assert.That(result.PropertyName, Is.EqualTo("email"));
+        Assert.That(result.Operator, Is.EqualTo("HAS_PROPERTY"));
+        Assert.That(result.Value, Is.Null);
+        Assert.That(result.Values, Is.Null);
+        Assert.That(result.HighValue, Is.Null);
+    }
+
+    [Test]
+    public void ParseFilterQuery_ShouldThrowOnInvalidBetweenFormat()
+    {
+        const string filter = "price between 100";
+
+        var ex = Assert.Throws<Exception>(() => FilterParser.ParseFilterQuery(filter));
+        Assert.That(ex.Message, Does.Contain("BETWEEN operator requires two comma-separated values"));
+    }
+
     private async Task CreateTestContacts(int count)
     {
         var client = new HttpClient();

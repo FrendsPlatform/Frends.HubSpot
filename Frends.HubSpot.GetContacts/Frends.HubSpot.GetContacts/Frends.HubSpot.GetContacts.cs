@@ -51,25 +51,41 @@ public static class HubSpot
             {
                 url = $"{connection.BaseUrl.TrimEnd('/')}/crm/v3/objects/contacts/search";
 
-                var (propertyName, @operator, value) = FilterParser.ParseFilterQuery(input.FilterQuery);
+                var parsed = FilterParser.ParseFilterQuery(input.FilterQuery);
+
+                var filter = new JObject
+                {
+                    ["propertyName"] = parsed.PropertyName,
+                    ["operator"] = parsed.Operator,
+                };
+
+                switch (parsed.Operator)
+                {
+                    case "IN":
+                    case "NOT_IN":
+                        filter["values"] = new JArray(parsed.Values);
+                        break;
+                    case "BETWEEN":
+                        filter["value"] = parsed.Value;
+                        filter["highValue"] = parsed.HighValue;
+                        break;
+                    case "HAS_PROPERTY":
+                    case "NOT_HAS_PROPERTY":
+                        break;
+                    default:
+                        filter["value"] = parsed.Value;
+                        break;
+                }
 
                 var requestBody = new JObject
                 {
                     ["filterGroups"] = new JArray
-                {
-                    new JObject
                     {
-                        ["filters"] = new JArray
+                        new JObject
                         {
-                            new JObject
-                            {
-                                ["propertyName"] = propertyName,
-                                ["operator"] = @operator,
-                                ["value"] = value,
-                            },
+                            ["filters"] = new JArray { filter },
                         },
                     },
-                },
                     ["properties"] = input.Properties != null ? new JArray(input.Properties) : [],
                     ["limit"] = input.Limit,
                 };
@@ -78,7 +94,6 @@ public static class HubSpot
                     requestBody["after"] = input.After;
 
                 var content = new StringContent(requestBody.ToString(), Encoding.UTF8, "application/json");
-
                 response = await client.PostAsync(url, content, cancellationToken);
             }
             else
