@@ -136,6 +136,81 @@ public class UnitTests
     }
 
     [Test]
+    public async Task GetContacts_WithNotEqualFilter_SuccessTest()
+    {
+        await CreateTestContacts(2);
+        var (excludedId, excludedEmail) = testContacts[0];
+        var (expectedId, expectedEmail) = testContacts[1];
+
+        var maxRetries = 5;
+        Result result = null;
+
+        for (var i = 0; i < maxRetries; i++)
+        {
+            input.FilterQuery = $"email neq '{excludedEmail}'";
+            result = await HubSpot.GetContacts(input, connection, options, CancellationToken.None);
+
+            if (result.Contacts.Any(c => c["id"]?.ToString() == expectedId))
+                break;
+
+            await Task.Delay(2000 * i);
+        }
+
+        Assert.That(result.Success, Is.True);
+        Assert.That(result.Contacts.Any(c => c["id"]?.ToString() == expectedId), Is.True);
+        Assert.That(result.Contacts.Any(c => c["id"]?.ToString() == excludedId), Is.False);
+    }
+
+    [Test]
+    public async Task GetContacts_WithContainsFilter_SuccessTest()
+    {
+        await CreateTestContacts(1);
+        var (expectedId, expectedEmail) = testContacts[0];
+        var emailPrefix = expectedEmail.Split('@')[0];
+
+        var maxRetries = 5;
+        Result result = null;
+
+        for (var i = 0; i < maxRetries; i++)
+        {
+            input.FilterQuery = $"email contains_token '{emailPrefix}'";
+            result = await HubSpot.GetContacts(input, connection, options, CancellationToken.None);
+
+            if (result.Contacts.Any())
+                break;
+
+            await Task.Delay(2000 * i);
+        }
+
+        Assert.That(result.Success, Is.True);
+        Assert.That(result.Contacts.First()["id"]?.ToString(), Is.EqualTo(expectedId));
+    }
+
+    [Test]
+    public async Task GetContacts_WithHasPropertyFilter_SuccessTest()
+    {
+        await CreateTestContacts(1);
+        var (expectedId, expectedEmail) = testContacts[0];
+
+        var maxRetries = 5;
+        Result result = null;
+
+        for (var i = 0; i < maxRetries; i++)
+        {
+            input.FilterQuery = "email has_property";
+            result = await HubSpot.GetContacts(input, connection, options, CancellationToken.None);
+
+            if (result.Contacts.Any(c => c["id"]?.ToString() == expectedId))
+                break;
+
+            await Task.Delay(2000 * i);
+        }
+
+        Assert.That(result.Success, Is.True);
+        Assert.That(result.Contacts.Any(c => c["id"]?.ToString() == expectedId), Is.True);
+    }
+
+    [Test]
     public async Task GetContacts_WithLimit_SuccessTest()
     {
         await CreateTestContacts(2);
@@ -301,7 +376,7 @@ public class UnitTests
         Assert.That(result.PropertyName, Is.EqualTo("status"));
         Assert.That(result.Operator, Is.EqualTo("IN"));
         Assert.That(result.Value, Is.Null);
-        Assert.That(result.Values, Is.EquivalentTo(new[] { "active", "pending" }));
+        Assert.That(result.Values, Is.EquivalentTo(["active", "pending"]));
         Assert.That(result.HighValue, Is.Null);
     }
 
