@@ -22,7 +22,7 @@ public static class FilterParser
         var parts = filterQuery.Split([' '], StringSplitOptions.RemoveEmptyEntries);
 
         if (parts.Length < 2)
-            throw new Exception("Invalid filter format. Use: 'property operator \"value\"'");
+            throw new ArgumentException("Invalid filter format. Use: 'property operator \"value\"' for value-based operators, or 'property has_property'.", nameof(filterQuery));
 
         var operatorMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -47,7 +47,7 @@ public static class FilterParser
         var operatorKey = parts[1].ToLower();
 
         if (!operatorMap.TryGetValue(operatorKey, out var op))
-            throw new Exception($"Unsupported operator: {parts[1]}");
+            throw new ArgumentException($"Unsupported operator: {parts[1]}", nameof(filterQuery));
 
         var result = new ParsedFilter
         {
@@ -61,14 +61,18 @@ public static class FilterParser
         {
             case "IN":
             case "NOT_IN":
-                result.Values = [.. valuePart.Split(',').Select(v => v.Trim())];
+                if (string.IsNullOrWhiteSpace(valuePart))
+                    throw new ArgumentException("IN/NOT_IN operators require at least one comma-separated value.", nameof(filterQuery));
+                result.Values = [.. valuePart.Split(',', StringSplitOptions.TrimEntries).Where(v => !string.IsNullOrWhiteSpace(v))];
+                if (result.Values.Count == 0)
+                    throw new ArgumentException("IN/NOT_IN operators require at least one non-empty value.", nameof(filterQuery));
                 break;
             case "BETWEEN":
-                var bounds = valuePart.Split(',');
-                if (bounds.Length != 2)
-                    throw new Exception("BETWEEN operator requires two comma-separated values.");
-                result.Value = bounds[0].Trim();
-                result.HighValue = bounds[1].Trim();
+                var bounds = valuePart.Split(',', StringSplitOptions.TrimEntries);
+                if (bounds.Length != 2 || string.IsNullOrWhiteSpace(bounds[0]) || string.IsNullOrWhiteSpace(bounds[1]))
+                    throw new ArgumentException("BETWEEN operator requires two non-empty comma-separated values.", nameof(filterQuery));
+                result.Value = bounds[0];
+                result.HighValue = bounds[1];
                 break;
             case "HAS_PROPERTY":
             case "NOT_HAS_PROPERTY":

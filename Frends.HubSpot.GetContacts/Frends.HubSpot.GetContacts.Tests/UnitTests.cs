@@ -338,8 +338,8 @@ public class UnitTests
     {
         const string filter = "price between 100";
 
-        var ex = Assert.Throws<Exception>(() => FilterParser.ParseFilterQuery(filter));
-        Assert.That(ex.Message, Does.Contain("BETWEEN operator requires two comma-separated values"));
+        var ex = Assert.Throws<ArgumentException>(() => FilterParser.ParseFilterQuery(filter));
+        Assert.That(ex.Message, Does.Contain("BETWEEN operator requires two non-empty comma-separated values"));
     }
 
     private async Task CreateTestContacts(int count)
