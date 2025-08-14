@@ -75,11 +75,11 @@ public static class HubSpot
 
             var dealId = responseJson["id"]?.ToString();
 
-            if (!string.IsNullOrWhiteSpace(options.AssociateWithContactData))
+            if (!string.IsNullOrWhiteSpace(options.AssociateWithContactId))
             {
                 try
                 {
-                    await AssociateDeal.AssociateDealWithContact(client, connection.BaseUrl, dealId, options.AssociateWithContactData, cancellationToken);
+                    await AssociateDeal.AssociateDealWithContact(client, connection.BaseUrl, dealId, options.AssociateWithContactId, cancellationToken);
                 }
                 catch (Exception ex)
                 {

@@ -13,7 +13,7 @@ public class Options
     /// </summary>
     /// <example>1234567890</example>
     [DisplayFormat(DataFormatString = "text")]
-    public string AssociateWithContactData { get; set; }
+    public string AssociateWithContactId { get; set; }
 
     /// <summary>
     /// Whether to throw an error on failure. True by default.

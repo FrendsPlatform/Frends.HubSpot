@@ -84,7 +84,7 @@ public class UnitTests
         var contactId = await TestHelpers.CreateTestContact(apiKey, baseUrl, CancellationToken.None);
         Assert.That(contactId, Is.Not.Null.And.Not.Empty);
 
-        options.AssociateWithContactData = contactId;
+        options.AssociateWithContactId = contactId;
 
         var result = await HubSpot.CreateDeal(input, connection, options, CancellationToken.None);
 
