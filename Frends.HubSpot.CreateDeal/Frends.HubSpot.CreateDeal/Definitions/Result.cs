@@ -28,7 +28,7 @@ public class Result
     /// <summary>
     /// Unique Id of the created deal.
     /// </summary>
-    /// <example>123456789</example>
+    /// <example>1234567890</example>
     public string Id { get; set; }
 
     /// <summary>
