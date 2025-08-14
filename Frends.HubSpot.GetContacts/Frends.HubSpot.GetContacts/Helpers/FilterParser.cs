@@ -76,8 +76,12 @@ public static class FilterParser
                 break;
             case "HAS_PROPERTY":
             case "NOT_HAS_PROPERTY":
+                if (!string.IsNullOrWhiteSpace(valuePart))
+                    throw new ArgumentException($"{op} does not accept a value.", nameof(filterQuery));
                 break;
             default:
+                if (string.IsNullOrWhiteSpace(valuePart))
+                    throw new ArgumentException($"{op} operator requires a value.", nameof(filterQuery));
                 result.Value = valuePart;
                 break;
         }
