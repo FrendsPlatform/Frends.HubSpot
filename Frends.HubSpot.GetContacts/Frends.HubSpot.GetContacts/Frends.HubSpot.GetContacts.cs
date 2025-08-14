@@ -98,8 +98,6 @@ public static class HubSpot
                 if (!string.IsNullOrWhiteSpace(input.After))
                     queryParams["after"] = input.After;
 
-                queryParams["archived"] = options.IncludeArchived.ToString().ToLower();
-
                 if (queryParams.Count > 0)
                     url += "?" + string.Join("&", queryParams.Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"));
 
