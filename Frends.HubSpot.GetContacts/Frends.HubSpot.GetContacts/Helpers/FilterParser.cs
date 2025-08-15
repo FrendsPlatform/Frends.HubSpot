@@ -95,7 +95,7 @@ public static class FilterParser
     public class ParsedFilter
     {
         /// <summary>
-        /// The name of the HubSpot property being filtered.
+        /// HubSpot property being filtered.
         /// </summary>
         public string PropertyName { get; set; }
 
