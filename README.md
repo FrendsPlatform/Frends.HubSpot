@@ -5,8 +5,8 @@ Frends tasks for HubSpot operations.
 # Tasks
 
 - [Frends.HubSpot.CreateContact](Frends.HubSpot.CreateContact/README.md)
-- [Frends.HubSpot.DeleteContact](Frends.HubSpot.DeleteContact/README.md)
 - [Frends.HubSpot.UpdateContact](Frends.HubSpot.UpdateContact/README.md)
+- [Frends.HubSpot.DeleteContact](Frends.HubSpot.DeleteContact/README.md)
 - [Frends.HubSpot.GetContacts](Frends.HubSpot.GetContacts/README.md)
 - [Frends.HubSpot.CreateDeal](Frends.HubSpot.CreateDeal/README.md)
 
