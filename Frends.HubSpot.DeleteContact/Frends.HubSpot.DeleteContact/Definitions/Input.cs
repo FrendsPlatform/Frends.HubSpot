@@ -11,6 +11,6 @@ public class Input
     /// The unique Id of the contact to delete.
     /// </summary>
     /// <example>1234567890</example>
-    [DisplayFormat(DataFormatString = "text")]
+    [DisplayFormat(DataFormatString = "Text")]
     public string ContactId { get; set; }
 }
