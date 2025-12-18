@@ -12,7 +12,7 @@ public class Options
     /// Optional. Contact Id to associate the deal with.
     /// </summary>
     /// <example>1234567890</example>
-    [DisplayFormat(DataFormatString = "text")]
+    [DisplayFormat(DataFormatString = "Text")]
     public string AssociateWithContactId { get; set; }
 
     /// <summary>
