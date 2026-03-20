@@ -69,6 +69,9 @@ public static class HubSpot
 
             var ticketId = responseJson["id"]?.ToString();
 
+            if (string.IsNullOrWhiteSpace(ticketId))
+                throw new Exception("HubSpot response did not contain ticket id.");
+
             if (!string.IsNullOrWhiteSpace(options.AssociateWithContactId))
                 await AssociateTicket(client, connection.BaseUrl, ticketId, "contacts", options.AssociateWithContactId, cancellationToken);
 

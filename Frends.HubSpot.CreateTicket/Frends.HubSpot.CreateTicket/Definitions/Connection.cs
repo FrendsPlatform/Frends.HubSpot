@@ -19,7 +19,7 @@ public class Connection
     /// <summary>
     /// Base Url for the Api.
     /// </summary>
-    /// <example>https://api.hubapi.com.</example>
+    /// <example>https://api.hubapi.com</example>
     [DisplayFormat(DataFormatString = "Text")]
     public string BaseUrl { get; set; }
 }

@@ -20,6 +20,7 @@ public class FunctionalTests : TestBase
     [SetUp]
     public void Setup()
     {
+        ticketId = null;
         connection = new Connection
         {
             BaseUrl = baseUrl,
@@ -45,7 +46,11 @@ public class FunctionalTests : TestBase
     public async Task Cleanup()
     {
         if (ticketId != null)
+        {
             await TestHelpers.DeleteTestTicket(ticketId, ApiKey, baseUrl, CancellationToken.None);
+        }
+
+        ticketId = null;
     }
 
     [Test]
