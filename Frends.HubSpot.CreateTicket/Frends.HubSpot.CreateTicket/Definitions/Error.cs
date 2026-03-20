@@ -10,7 +10,7 @@ public class Error
     /// <summary>
     /// Summary of the error.
     /// </summary>
-    /// <example>Unable to create ticket.</example>
+    /// <example>Unable to create new ticket.</example>
     public string Message { get; set; }
 
     /// <summary>
