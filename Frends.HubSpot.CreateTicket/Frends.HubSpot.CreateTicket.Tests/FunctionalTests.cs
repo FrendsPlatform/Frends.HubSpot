@@ -1,11 +1,11 @@
-using Frends.HubSpot.CreateTicket.Definitions;
-using Frends.HubSpot.CreateTicket.Tests.Helpers;
-using Newtonsoft.Json.Linq;
-using NUnit.Framework;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Frends.HubSpot.CreateTicket.Definitions;
+using Frends.HubSpot.CreateTicket.Tests.Helpers;
+using Newtonsoft.Json.Linq;
+using NUnit.Framework;
 
 namespace Frends.HubSpot.CreateTicket.Tests;
 
