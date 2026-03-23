@@ -7,6 +7,9 @@ internal static class ErrorHandler
 {
     internal static Result Handle(Exception exception, bool throwOnFailure, string errorMessageOnFailure)
     {
+        if (exception is OperationCanceledException)
+            throw exception;
+
         if (throwOnFailure)
         {
             if (string.IsNullOrEmpty(errorMessageOnFailure))

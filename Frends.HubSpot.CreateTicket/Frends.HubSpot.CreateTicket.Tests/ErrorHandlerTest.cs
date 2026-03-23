@@ -6,7 +6,6 @@ using NUnit.Framework;
 
 namespace Frends.HubSpot.CreateTicket.Tests;
 
-// TODO: Adjust the test to use a real invalid Input scenario (e.g., missing or malformed data)
 [TestFixture]
 public class ErrorHandlerTest
 {

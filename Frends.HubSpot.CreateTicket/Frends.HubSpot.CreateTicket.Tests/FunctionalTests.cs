@@ -1,10 +1,11 @@
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Frends.HubSpot.CreateTicket.Definitions;
 using Frends.HubSpot.CreateTicket.Tests.Helpers;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Frends.HubSpot.CreateTicket.Tests;
 
@@ -12,6 +13,9 @@ namespace Frends.HubSpot.CreateTicket.Tests;
 public class FunctionalTests : TestBase
 {
     private readonly string baseUrl = "https://api.hubapi.com";
+    private readonly string companyId = "175778808024";
+    private readonly string dealId = "494473663705";
+    private readonly string contactId = "335401013465";
     private string ticketId;
     private Connection connection;
     private Input input;
@@ -47,10 +51,11 @@ public class FunctionalTests : TestBase
     {
         if (ticketId != null)
         {
-            await TestHelpers.DeleteTestTicket(ticketId, ApiKey, baseUrl, CancellationToken.None);
+            var deleted = await TestHelpers.DeleteTestTicket(ticketId, ApiKey, baseUrl, CancellationToken.None);
+            if (!deleted)
+                Console.WriteLine($"Warning: ticket {ticketId} was not deleted - it may not have existed.");
+            ticketId = null;
         }
-
-        ticketId = null;
     }
 
     [Test]
@@ -124,7 +129,7 @@ public class FunctionalTests : TestBase
     [Test]
     public async Task CreateTicket_WithAssociateWithContactId_AssociatesCorrectly()
     {
-        options.AssociateWithContactId = "335401013465";
+        options.AssociateWithContactId = contactId;
 
         var result = await HubSpot.CreateTicket(input, connection, options, CancellationToken.None);
         Assert.That(result.Success, Is.True);
@@ -132,13 +137,13 @@ public class FunctionalTests : TestBase
 
         var associations = JObject.Parse(await TestHelpers.GetTestTicketAssociations(ticketId, "contacts", ApiKey, baseUrl, CancellationToken.None));
         var associatedIds = associations["results"]?.Select(r => r["toObjectId"]?.ToString());
-        Assert.That(associatedIds, Does.Contain("335401013465"));
+        Assert.That(associatedIds, Does.Contain(contactId));
     }
 
     [Test]
     public async Task CreateTicket_WithAssociateWithDealId_AssociatesCorrectly()
     {
-        options.AssociateWithDealId = "494473663705";
+        options.AssociateWithDealId = dealId;
 
         var result = await HubSpot.CreateTicket(input, connection, options, CancellationToken.None);
         Assert.That(result.Success, Is.True);
@@ -146,13 +151,13 @@ public class FunctionalTests : TestBase
 
         var associations = JObject.Parse(await TestHelpers.GetTestTicketAssociations(ticketId, "deals", ApiKey, baseUrl, CancellationToken.None));
         var associatedIds = associations["results"]?.Select(r => r["toObjectId"]?.ToString());
-        Assert.That(associatedIds, Does.Contain("494473663705"));
+        Assert.That(associatedIds, Does.Contain(dealId));
     }
 
     [Test]
     public async Task CreateTicket_WithAssociateWithCompanyId_AssociatesCorrectly()
     {
-        options.AssociateWithCompanyId = "175778808024";
+        options.AssociateWithCompanyId = companyId;
 
         var result = await HubSpot.CreateTicket(input, connection, options, CancellationToken.None);
         Assert.That(result.Success, Is.True);
@@ -160,6 +165,6 @@ public class FunctionalTests : TestBase
 
         var associations = JObject.Parse(await TestHelpers.GetTestTicketAssociations(ticketId, "companies", ApiKey, baseUrl, CancellationToken.None));
         var associatedIds = associations["results"]?.Select(r => r["toObjectId"]?.ToString());
-        Assert.That(associatedIds, Does.Contain("175778808024"));
+        Assert.That(associatedIds, Does.Contain(companyId));
     }
 }
