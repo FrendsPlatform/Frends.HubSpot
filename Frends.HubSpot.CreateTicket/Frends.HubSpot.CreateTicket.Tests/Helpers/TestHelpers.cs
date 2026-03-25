@@ -16,7 +16,8 @@ namespace Frends.HubSpot.CreateTicket.Tests.Helpers
         {
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
-            var response = await client.DeleteAsync($"{baseUrl.TrimEnd('/')}/crm/v3/objects/tickets/{ticketId}",
+            var response = await client.DeleteAsync(
+                $"{baseUrl.TrimEnd('/')}/crm/v3/objects/tickets/{ticketId}",
                 cancellationToken);
 
             if (response.StatusCode != HttpStatusCode.NoContent)
