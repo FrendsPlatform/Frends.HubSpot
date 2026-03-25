@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,14 +16,25 @@ namespace Frends.HubSpot.CreateTicket.Tests.Helpers
         {
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
-            await client.DeleteAsync($"{baseUrl.TrimEnd('/')}/crm/v3/objects/tickets/{ticketId}", cancellationToken);
-            var response = await client.DeleteAsync($"{baseUrl.TrimEnd('/')}/crm/v3/objects/tickets/{ticketId}", cancellationToken);
+            var response = await client.DeleteAsync($"{baseUrl.TrimEnd('/')}/crm/v3/objects/tickets/{ticketId}",
+                cancellationToken);
 
-            if (response.StatusCode == HttpStatusCode.NotFound)
-                return false;
-
-            response.EnsureSuccessStatusCode();
-            return false;
+            if (response.StatusCode != HttpStatusCode.NoContent)
+                throw new Exception($"Delete test ticket failed with status code {response.StatusCode}");
+            try
+            {
+                var ticketData = await GetTestTicket("1", apiKey, baseUrl, cancellationToken);
+                return ticketData == null
+                    ? throw new Exception(
+                        "Checking if ticket exists failed - expected any data data or Exception but got null")
+                    : false;
+            }
+            catch (Exception e)
+            {
+                return e.Message.Contains("404")
+                    ? false
+                    : throw new Exception($"Checking if ticket exists failed with message {e.Message}");
+            }
         }
 
         public static async Task<string> GetTestTicket(
