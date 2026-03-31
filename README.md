@@ -10,6 +10,7 @@ Frends tasks for HubSpot operations.
 - [Frends.HubSpot.GetContacts](Frends.HubSpot.GetContacts/README.md)
 - [Frends.HubSpot.CreateDeal](Frends.HubSpot.CreateDeal/README.md)
 - [Frends.HubSpot.CreateTicket](Frends.HubSpot.CreateTicket/README.md)
+- [Frends.HubSpot.UpdateTicket](Frends.HubSpot.UpdateTicket/README.md)
 
 # Contributing
 When contributing to this repository, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change.
