@@ -1,12 +1,11 @@
-﻿using Frends.HubSpot.DeleteTicket.Definitions;
-using Frends.HubSpot.DeleteTicket.Helpers;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Frends.HubSpot.DeleteTicket.Definitions;
+using Frends.HubSpot.DeleteTicket.Helpers;
+using Newtonsoft.Json.Linq;
 
 namespace Frends.HubSpot.DeleteTicket;
 

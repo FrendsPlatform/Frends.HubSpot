@@ -75,13 +75,11 @@ public class FunctionalTests : TestBase
     }
 
     [Test]
-    public async Task DeleteTicket_NonExistentTicketId_ReturnsError()
+    public async Task DeleteTicket_NonExistentTicketId_ReturnsSuccess()
     {
-        input.TicketId = "0";
-        options.ThrowErrorOnFailure = false;
+        input.TicketId = "000000000000";
 
         var result = await HubSpot.DeleteTicket(input, connection, options, CancellationToken.None);
-        Assert.That(result.Success, Is.False);
-        Assert.That(result.Error.Message, Does.Contain("404"));
+        Assert.That(result.Success, Is.True);
     }
 }

@@ -69,5 +69,5 @@ namespace Frends.HubSpot.CreateTicket.Tests.Helpers
             response.EnsureSuccessStatusCode();
             return true;
         }
+    }
 }
-

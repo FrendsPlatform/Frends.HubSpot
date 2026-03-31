@@ -12,7 +12,7 @@ public class Result
     public bool Success { get; set; }
 
     /// <summary>
-    /// The ID of the delted ticket returned by HubSpot.
+    /// The ID of the deleted ticket.
     /// </summary>
     /// <example>123</example>
     public string Id { get; set; }
