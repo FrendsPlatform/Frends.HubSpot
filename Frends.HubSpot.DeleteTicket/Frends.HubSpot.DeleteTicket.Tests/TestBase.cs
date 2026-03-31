@@ -7,11 +7,10 @@ public abstract class TestBase
 {
     protected TestBase()
     {
-        // TODO: Here you can load environment variables used in tests
         DotEnv.Load();
-        SecretKey = Environment.GetEnvironmentVariable("FRENDS_SECRET_KEY");
+        ApiKey = Environment.GetEnvironmentVariable("FRENDS_HubSpot_privateAccessToken")
+            ?? throw new InvalidOperationException("Missing required env var: FRENDS_HubSpot_privateAccessToken");
     }
 
-    // TODO: Replace with your secret key or remove if not needed
-    protected string SecretKey { get; }
+    protected string ApiKey { get; }
 }
