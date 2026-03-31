@@ -1,8 +1,8 @@
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Frends.HubSpot.CreateTicket.Tests.Helpers;
 using Frends.HubSpot.DeleteTicket.Definitions;
+using Frends.HubSpot.DeleteTicket.Tests.Helpers;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
