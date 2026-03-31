@@ -66,7 +66,7 @@ public static class HubSpot
             if (!response.IsSuccessStatusCode)
             {
                 var error = responseJson["message"]?.ToString() ?? "Unknown error";
-                return ErrorHandler.Handle(new Exception($"HubSpot API error: {response.StatusCode} - {error}"), options.ThrowErrorOnFailure, options.ErrorMessageOnFailure);
+                throw new Exception($"HubSpot API error: {response.StatusCode} - {error}");
             }
 
             var ticketId = responseJson["id"]?.ToString();

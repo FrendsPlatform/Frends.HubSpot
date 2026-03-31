@@ -24,17 +24,14 @@ namespace Frends.HubSpot.UpdateTicket.Tests.Helpers
                 throw new Exception($"Delete test ticket failed with status code {response.StatusCode}");
             try
             {
-                var ticketData = await GetTestTicket("1", apiKey, baseUrl, cancellationToken);
-                return ticketData == null
-                    ? throw new Exception(
-                        "Checking if ticket exists failed - expected any data data or Exception but got null")
-                    : false;
+                await GetTestTicket(ticketId, apiKey, baseUrl, cancellationToken);
+                return false;
             }
             catch (Exception e)
             {
-                return e.Message.Contains("404")
-                    ? false
-                    : throw new Exception($"Checking if ticket exists failed with message {e.Message}");
+                if (e.Message.Contains("404"))
+                    return true;
+                throw new Exception($"Checking if ticket exists failed with message {e.Message}");
             }
         }
 
