@@ -105,8 +105,17 @@ public static class HubSpot
         if (!response.IsSuccessStatusCode)
         {
             var body = await response.Content.ReadAsStringAsync(cancellationToken);
-            var json = JObject.Parse(body);
-            var error = json["message"]?.ToString() ?? "Unknown error";
+            string error;
+            try
+            {
+                var json = JObject.Parse(body);
+                error = json["message"]?.ToString() ?? body;
+            }
+            catch (Newtonsoft.Json.JsonReaderException)
+            {
+                error = string.IsNullOrWhiteSpace(body) ? "Unknown error" : body;
+            }
+
             throw new Exception($"Failed to associate ticket with {toObjectType}: {response.StatusCode} - {error}");
         }
     }
