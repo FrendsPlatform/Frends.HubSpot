@@ -22,17 +22,8 @@ namespace Frends.HubSpot.DeleteTicket.Tests.Helpers
 
             if (response.StatusCode != HttpStatusCode.NoContent)
                 throw new Exception($"Delete test ticket failed with status code {response.StatusCode}");
-            try
-            {
-                await GetTestTicket(ticketId, apiKey, baseUrl, cancellationToken);
-                return false;
-            }
-            catch (Exception e)
-            {
-                if (e.Message.Contains("404"))
-                    return true;
-                throw new Exception($"Checking if ticket exists failed with message {e.Message}");
-            }
+
+            return !await TicketExists(ticketId, apiKey, baseUrl, cancellationToken);
         }
 
         public static async Task<string> GetTestTicket(

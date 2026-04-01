@@ -43,8 +43,8 @@ public static class HubSpot
 
             var response = await client.DeleteAsync($"{connection.BaseUrl.TrimEnd('/')}/crm/v3/objects/tickets/{input.TicketId}", cancellationToken);
 
-            if (!response.IsSuccessStatusCode)
-            {
+            if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+             {
                 var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
                 var responseJson = JObject.Parse(responseContent);
                 var error = responseJson["message"]?.ToString() ?? "Unknown error";
