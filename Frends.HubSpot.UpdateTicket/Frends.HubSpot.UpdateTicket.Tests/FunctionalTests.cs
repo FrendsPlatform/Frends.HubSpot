@@ -150,4 +150,22 @@ public class FunctionalTests : TestBase
         var associatedIds = associations["results"]?.Select(r => r["toObjectId"]?.ToString());
         Assert.That(associatedIds, Does.Contain(companyId));
     }
+
+    [Test]
+    public async Task UpdateTicket_MissingTicketId_ReturnsErrorWithoutThrowing()
+    {
+        options.ThrowErrorOnFailure = false;
+        input.TicketId = string.Empty;
+
+        var result = await HubSpot.UpdateTicket(input, connection, options, CancellationToken.None);
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.Error.Message, Does.Contain("TicketId is required"));
+    }
+
+    [Test]
+    public void ParseErrorMessage_EmptyBody_ReturnsUnknownError()
+    {
+        var result = HubSpot.ParseErrorMessage(string.Empty);
+        Assert.That(result, Is.EqualTo("Unknown error"));
+    }
 }

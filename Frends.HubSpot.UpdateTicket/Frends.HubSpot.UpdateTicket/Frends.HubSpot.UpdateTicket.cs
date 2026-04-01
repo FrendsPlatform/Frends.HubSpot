@@ -91,13 +91,26 @@ public static class HubSpot
         }
     }
 
+    internal static string ParseErrorMessage(string body)
+    {
+        try
+        {
+            var json = JObject.Parse(body);
+            return json["message"]?.ToString() ?? body;
+        }
+        catch (Newtonsoft.Json.JsonReaderException)
+        {
+            return string.IsNullOrWhiteSpace(body) ? "Unknown error" : body;
+        }
+    }
+
     private static async Task AssociateTicket(
-    HttpClient client,
-    string baseUrl,
-    string ticketId,
-    string toObjectType,
-    string toObjectId,
-    CancellationToken cancellationToken)
+        HttpClient client,
+        string baseUrl,
+        string ticketId,
+        string toObjectType,
+        string toObjectId,
+        CancellationToken cancellationToken)
     {
         var url = $"{baseUrl.TrimEnd('/')}/crm/v4/objects/tickets/{ticketId}/associations/default/{toObjectType}/{toObjectId}";
         var response = await client.PutAsync(url, null, cancellationToken);
@@ -105,16 +118,7 @@ public static class HubSpot
         if (!response.IsSuccessStatusCode)
         {
             var body = await response.Content.ReadAsStringAsync(cancellationToken);
-            string error;
-            try
-            {
-                var json = JObject.Parse(body);
-                error = json["message"]?.ToString() ?? body;
-            }
-            catch (Newtonsoft.Json.JsonReaderException)
-            {
-                error = string.IsNullOrWhiteSpace(body) ? "Unknown error" : body;
-            }
+            var error = ParseErrorMessage(body);
 
             throw new Exception($"Failed to associate ticket with {toObjectType}: {response.StatusCode} - {error}");
         }
