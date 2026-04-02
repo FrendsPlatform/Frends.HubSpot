@@ -24,16 +24,13 @@ public static class TestHelpers
             throw new Exception($"Delete test ticket failed with status code {response.StatusCode}");
         try
         {
-            var ticketData = await GetTestTicket("1", apiKey, baseUrl, cancellationToken);
-            return ticketData == null
-                ? throw new Exception(
-                    "Checking if ticket exists failed - expected any data data or Exception but got null")
-                : false;
+            await GetTestTicket(ticketId, apiKey, baseUrl, cancellationToken);
+            throw new Exception($"Ticket {ticketId} still exists after deletion");
         }
         catch (Exception e)
         {
             return e.Message.Contains("404")
-                ? false
+                ? true
                 : throw new Exception($"Checking if ticket exists failed with message {e.Message}");
         }
     }
