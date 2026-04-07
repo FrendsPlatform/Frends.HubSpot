@@ -13,6 +13,7 @@ Frends tasks for HubSpot operations.
 - [Frends.HubSpot.UpdateTicket](Frends.HubSpot.UpdateTicket/README.md)
 - [Frends.HubSpot.DeleteTicket](Frends.HubSpot.DeleteTicket/README.md)
 - [Frends.HubSpot.CreateCompany](Frends.HubSpot.CreateCompany/README.md)
+- [Frends.HubSpot.UpdateCompany](Frends.HubSpot.UpdateCompany/README.md)
 
 
 
