@@ -10,7 +10,7 @@ public class Error
     /// <summary>
     /// Summary of the error.
     /// </summary>
-    /// <example>Unable to update ticket.</example>
+    /// <example>Unable to update Hubspot ticket.</example>
     public string Message { get; set; }
 
     /// <summary>
