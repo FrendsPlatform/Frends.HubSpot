@@ -145,7 +145,7 @@ public class FunctionalTests : TestBase
     }
 
     [Test]
-    public async Task UpdateCompany_InvalidId_ThrowsError()
+    public async Task UpdateCompany_InvalidId_ReturnsFailure()
     {
         input.Id = "000000000000";
         options.ThrowErrorOnFailure = false;
