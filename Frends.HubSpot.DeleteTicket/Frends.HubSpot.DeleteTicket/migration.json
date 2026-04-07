@@ -1,0 +1,12 @@
+﻿[
+  {
+    "Task": "Frends.HubSpot.DeleteTicket",
+    "Migrations": [
+      {
+        "Version": "1.0.0",
+        "Description": "",
+        "Migration": []
+      }
+    ]
+  }
+]
