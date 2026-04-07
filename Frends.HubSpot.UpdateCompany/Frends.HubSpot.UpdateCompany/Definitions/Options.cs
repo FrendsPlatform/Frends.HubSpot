@@ -17,7 +17,7 @@ public class Options
     /// <summary>
     /// Associate the company with a HubSpot deal by providing the deal ID.
     /// </summary>
-    /// <example>98765432</example>
+    /// <example>9876543</example>
     public string AssociateWithDealId { get; set; }
 
     /// <summary>
