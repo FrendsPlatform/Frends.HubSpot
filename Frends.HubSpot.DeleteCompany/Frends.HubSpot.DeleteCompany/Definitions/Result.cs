@@ -14,7 +14,7 @@ public class Result
     /// <summary>
     /// The ID of the deleted company.
     /// </summary>
-    /// <example>123</example>
+    /// <example>1234</example>
     public string Id { get; set; }
 
     /// <summary>
