@@ -14,8 +14,8 @@ public class ErrorHandlerTest
     [Test]
     public void Should_Throw_Error_When_ThrowErrorOnFailure_Is_True()
     {
-        var ex = Assert.ThrowsAsync<Exception>(() =>
-           HubSpot.CreateCompany(DefaultInput(), DefaultConnection(), DefaultOptions(), CancellationToken.None));
+        var ex = Assert.ThrowsAsync<Exception>((Func<Task>)(async () =>
+           await HubSpot.CreateCompany(DefaultInput(), DefaultConnection(), DefaultOptions(), CancellationToken.None)));
         Assert.That(ex, Is.Not.Null);
     }
 
@@ -33,8 +33,8 @@ public class ErrorHandlerTest
     {
         var options = DefaultOptions();
         options.ErrorMessageOnFailure = CustomErrorMessage;
-        var ex = Assert.ThrowsAsync<Exception>(() =>
-            HubSpot.CreateCompany(DefaultInput(), DefaultConnection(), options, CancellationToken.None));
+        var ex = Assert.ThrowsAsync<Exception>((Func<Task>)(async () =>
+            await HubSpot.CreateCompany(DefaultInput(), DefaultConnection(), options, CancellationToken.None)));
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.Message, Contains.Substring(CustomErrorMessage));
     }
