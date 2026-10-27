@@ -19,10 +19,14 @@
     <ItemGroup>
 		<PackageReference Include="dotenv.net" Version="4.0.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+		<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+		<PackageReference Include="FrendsTaskAnalyzers" Version="1.*">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
         <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
     </ItemGroup>
 
@@ -32,11 +36,14 @@
         </AssemblyAttribute>
     </ItemGroup>
 
-    <ItemGroup>
-        <None Include="FrendsTaskMetadata.json" Pack="true" PackagePath="/">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-		<None Include="..\CHANGELOG.md" Pack="true" PackagePath="/" />
-    </ItemGroup>
+	<ItemGroup>
+		<Content Include="migration.json" PackagePath="/" Pack="true"/>
+		<Content Include="../CHANGELOG.md" PackagePath="/" Pack="true"/>
+		<Content Include="FrendsTaskMetadata.json"
+				 Pack="true"
+				 PackagePath="/"
+				 CopyToOutputDirectory="PreserveNewest" />
+		<AdditionalFiles Include="FrendsTaskMetadata.json" />
+	</ItemGroup>
 
 </Project>
