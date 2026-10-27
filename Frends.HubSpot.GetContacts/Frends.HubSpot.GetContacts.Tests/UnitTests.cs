@@ -25,7 +25,7 @@ public class UnitTests
     private Connection connection;
     private Input input;
     private Options options;
-    private List<(string Id, string Email)> testContacts = [];
+    private List<(string Id, string Email)> testContacts = new List<(string Id, string Email)>();
 
     public UnitTests()
     {
@@ -44,7 +44,9 @@ public class UnitTests
 
         input = new Input
         {
-            Properties = ["email", "firstname", "lastname"],
+            Properties =
+                ["email", "firstname", "lastname"],
+
             Limit = 5,
         };
 
@@ -86,7 +88,8 @@ public class UnitTests
     [Test]
     public async Task GetContacts_WithSpecificProperties_SuccessTest()
     {
-        input.Properties = ["email", "firstname"];
+        input.Properties =
+            ["email", "firstname"];
 
         var result = await HubSpot.GetContacts(input, connection, options, CancellationToken.None);
 

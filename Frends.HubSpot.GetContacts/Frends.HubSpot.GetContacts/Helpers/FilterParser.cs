@@ -97,26 +97,31 @@ public static class FilterParser
         /// <summary>
         /// HubSpot property being filtered.
         /// </summary>
+        /// <example>email</example>
         public string PropertyName { get; set; }
 
         /// <summary>
         /// HubSpot operator (e.g., EQ, IN, BETWEEN).
         /// </summary>
+        /// <example>EQ</example>
         public string Operator { get; set; }
 
         /// <summary>
         /// The main value for the filter.
         /// </summary>
+        /// <example>john.doe@example.com</example>
         public string Value { get; set; }
 
         /// <summary>
         /// The second value used in BETWEEN filters.
         /// </summary>
+        /// <example>2025-12-31</example>
         public string HighValue { get; set; }
 
         /// <summary>
         /// A list of values used in multi-value filters like IN and NOT_IN.
         /// </summary>
+        /// <example>a@example.com, b@example.com</example>
         public List<string> Values { get; set; }
     }
 }
